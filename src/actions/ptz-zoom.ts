@@ -1,8 +1,6 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
-import { apiBaseCMD } from "../utils/ptz-api-base";
 import { APINeoid, SpeedType } from "../api/api-neoid";
 import { APITelycam } from "../api/api-telycam";
-import { formatWithOptions } from "util";
 
 export type PtzZoom = {
   speed?: number;
