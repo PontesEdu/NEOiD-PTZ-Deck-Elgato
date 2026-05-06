@@ -166,17 +166,33 @@ Perguntar antes de "corrigir". Exemplos de coisas que parecem erradas mas são i
 
 ---
 
-## 6. Pontos com incerteza conhecida
+## 6. Histórico de migrações de SDK
+
+### SDK 1.x → 2.0.0 (branch `fix/sdk-compatibility`)
+
+**Problema 1 — `LogLevel` removido do pacote principal**
+No SDK 1.x era um enum (`LogLevel.TRACE`). No SDK 2.0.0 virou um tipo string em `@elgato/utils/logging`.
+- Correção em `src/plugin.ts`: removido `LogLevel` do import, `setLevel(LogLevel.TRACE)` → `setLevel("trace")`.
+
+**Problema 2 — `PropertyInspector` removido do pacote principal**
+Estava importado (sem uso) em 3 arquivos. Solução: removido do import.
+- `src/actions/dials/focus-dials.ts`
+- `src/actions/dials/zoom-dials.ts`
+- `src/actions/ptz-focus.ts`
+
+Todos os outros tipos usados no projeto (`SingletonAction`, `KeyDownEvent`, `KeyUpEvent`, `DialRotateEvent`, `WillAppearEvent`, `DidReceiveSettingsEvent`, `PropertyInspectorDidAppearEvent`, etc.) continuam disponíveis no SDK 2.0.0.
+
+---
+
+## 7. Pontos com incerteza conhecida
 
 ### `onDialRotate` em `PTZControls`
 
 Existe um handler `onDialRotate` em `src/actions/ptz-controls.ts` que trata rotação de encoder para foco. É código experimental/legado que sobrou de uma versão anterior. Não remove funcionalidade ativa — botões de controle direcional não são encoders.
 
-### Referências ao `TarckingDial` em `plugin.ts`
+### ~~Referências ao `TarckingDial` em `plugin.ts`~~ — resolvido
 
-`plugin.ts` importa `TarckingDial` (com typo) de `./actions/dials/tracking-dials`, mas esse arquivo foi deletado. O build vai falhar por causa disso. As linhas a remover são:
-- `import { TarckingDial } from "./actions/dials/tracking-dials";` (linha 14)
-- `streamDeck.actions.registerAction(new TarckingDial());` (linha 34)
+Referências ao arquivo deletado `tracking-dials.ts` já foram removidas de `plugin.ts`.
 
 ### `checkCameraConnection` com `mode: 'no-cors'`
 

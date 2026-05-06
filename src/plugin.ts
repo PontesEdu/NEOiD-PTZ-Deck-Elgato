@@ -1,4 +1,4 @@
-import streamDeck, { LogLevel } from "@elgato/streamdeck";
+import streamDeck from "@elgato/streamdeck";
 
 import { PTZControls } from "./actions/ptz-controls";
 import { PTZZoom } from "./actions/ptz-zoom";
@@ -13,7 +13,7 @@ import { FocusDial } from "./actions/dials/focus-dials";
 import { ZoomDial } from "./actions/dials/zoom-dials";
 
 // We can enable "trace" logging so that all messages between the Stream Deck, and the plugin are recorded. When storing sensitive information
-streamDeck.logger.setLevel(LogLevel.TRACE);
+streamDeck.logger.setLevel("trace");
 
 
 // Register action.
