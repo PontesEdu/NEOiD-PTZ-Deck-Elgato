@@ -1,0 +1,229 @@
+{
+	"Name": "NEOiD PTZ Deck",
+	"Version": "2.0.0.0",
+	"Author": "NEOiD",
+	"Actions": [
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-register",
+			"Name": "Select Camera PTZ",
+			"UserTitleEnabled": false,
+			"Tooltip": "Cadastro de câmeras PTZ",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/cameraSelect",
+					"FontSize": 9
+				}
+			],
+			"PropertyInspectorPath": "ui/select-ptz.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-controls",
+			"Name": "Controls PTZ",
+			"UserTitleEnabled": false,
+			"Tooltip": "Controls the functions",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/controls/up",
+					"FontSize": 9
+				}
+			],
+			"PropertyInspectorPath": "ui/ptz-controls.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-speed",
+			"Name": "Speed - P/T | Focus | Zoom",
+			"UserTitleEnabled": false,
+			"Tooltip": "Controls the functions Speed",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/speed"
+				}
+			],
+			"PropertyInspectorPath": "ui/speed.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-zoom",
+			"Name": "Zoom",
+			"UserTitleEnabled": true,
+			"Tooltip": "Controls the functions Zoom",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/zoom/zoomin",
+					"FontSize": 8
+				}
+			],
+			"PropertyInspectorPath": "ui/zoom.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-focus",
+			"Name": "Focus",
+			"UserTitleEnabled": false,
+			"Controllers": ["Keypad"],
+			"Encoder": {
+        "layout": "$A1",
+				"Icon": "imgs/plugin/logo-neoid",
+				"TriggerDescription": {
+					"Rotate": "Incremental adjustment"
+				}
+      },
+			"Tooltip": "Controls the functions Focus",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/focus/focusin",
+					"FontSize": 8
+				}
+			],
+			"PropertyInspectorPath": "ui/focus.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-tracking",
+			"Name": "Tracking",
+			"UserTitleEnabled": false,
+			"Controllers": ["Keypad"],
+			"Tooltip": "Controls the functions Tracking",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/tracking/tracking-off",
+					"FontSize": 9
+				}
+			],
+			"PropertyInspectorPath": "ui/tracking.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.backlight",
+			"Name": "Backlight",
+			"UserTitleEnabled": false,
+			"Tooltip": "Controls the functions Backlight",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/backlight",
+					"FontSize": 8
+				}
+			],
+			"PropertyInspectorPath": "ui/backlight.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.ptz-preset",
+			"Name": "Preset",
+			"UserTitleEnabled": false,
+			"Tooltip": "Controls the functions Preset (save)",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/preset/preset"
+				}
+			],
+			"PropertyInspectorPath": "ui/preset.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.osd",
+			"Name": "OSD Menu",
+			"UserTitleEnabled": false,
+			"Tooltip": "Controls the functions OSD Menu",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/osd"
+				}
+			],
+			"PropertyInspectorPath": "ui/osd.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.focus-dial",
+			"Name": "Focus",
+			"UserTitleEnabled": false,
+			"Controllers": ["Encoder"],
+			"Encoder": {
+        "layout": "$A1",
+				"Icon": "imgs/plugin/logo-neoid",
+				"TriggerDescription": {
+					"Rotate": "Adjust focus"
+				}
+      },
+			"Tooltip": "Controls the functions Focus",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/plugin/logo-neoid@2x",
+					"FontSize": 13
+				}
+			],
+			"PropertyInspectorPath": "ui/dials/focus-dial.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.zoom-dial",
+			"Name": "Zoom",
+			"UserTitleEnabled": false,
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "$A1",
+				"Icon": "imgs/plugin/logo-neoid",
+				"TriggerDescription": {
+					"Rotate": "Adjust Zoom"
+				}
+      },
+			"Tooltip": "Controls the functions Zoom",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/plugin/logo-neoid@2x",
+					"FontSize": 13
+				}
+			],
+			"PropertyInspectorPath": "ui/dials/zoom-dial.html"
+		},
+		{
+			"UUID": "com.neoid.ptzneoid.tracking-dial",
+			"Name": "Tracking",
+			"UserTitleEnabled": false,
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "$A1",
+				"Icon": "imgs/plugin/logo-neoid",
+				"TriggerDescription": {
+					"Rotate": "Adjust tracking"
+				}
+      },
+			"Tooltip": "Controls the functions tracking",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/plugin/logo-neoid@2x",
+					"FontSize": 13
+				}
+			],
+			"PropertyInspectorPath": "ui/dials/tracking-dial.html"
+		}
+	],
+	"Category": "NEOiD PTZ Deck",
+	"CategoryIcon": "imgs/plugin/logo-neoid@2x",
+	"CodePath": "bin/plugin.js",
+	"Description": "Streamline Your Video Production with NEOiD’s StreamDeck Plugin\n\nTake full control of your NEOiD PTZ cameras directly from your Stream Deck with the NEOiD PTZ Deck. Designed for simplicity and efficiency, this integration allows you to control pan, tilt, and zoom movements effortlessly, along with many other commands, while presets can be recalled instantly with just one touch. Whether you’re live streaming, recording in a studio, or managing a multi-camera setup, the NEOiD PTZ Deck gives you the speed and precision you need to elevate your production.\n\nFor creators and professionals looking for even more flexibility, the plugin offers intuitive multi-camera support and reliable performance, making it a perfect fit for churches, schools, event production, and broadcast studios. With smoother workflows and faster adjustments, you can focus less on the technical side and more on delivering great content.",
+	"Icon": "imgs/plugin/logo-neoid",
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "6.5"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "12"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "com.neoid.ptzneoid"
+}

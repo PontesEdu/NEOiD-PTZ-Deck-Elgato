@@ -1,0 +1,39 @@
+* {
+  padding: 0px;
+  margin: 0px;
+}
+
+body { 
+  font-family: sans-serif;
+  color: rgba(225, 224, 232, 0.93);
+}
+
+sdpi-select{
+  outline-color: none;
+  border: 0;
+  margin-bottom: 20px;
+}
+
+#separate-field{
+  margin-bottom: 20px;
+}
+
+.p-local{
+  font-size: 1rem;
+  padding-top: 20px;
+}
+
+.p-text {
+  margin-top: 0px;
+}
+
+h3{
+  font-size: 1.1rem;
+  padding: 15px 0px;
+}
+
+p{
+  font-size: 0.7rem;
+  padding-bottom: 5px;
+  letter-spacing: 0.7px;
+}

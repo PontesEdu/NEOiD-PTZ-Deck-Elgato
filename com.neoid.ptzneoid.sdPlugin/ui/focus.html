@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="sdpi-components.js"></script>
+  <title>Settings PTZ - FOCUS</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+
+  <h3>NEOiD PTZ Deck - Focus</h3>
+  
+  <div id="separate-field">
+    <sdpi-item label="Focus">
+      <sdpi-select setting="mode" default="none" placeholder="Select direction">
+        <option value="none" disabled selected hidden>Select</option>
+        <option value="focusin">Focus in</option>
+        <option value="focusout">Focus out</option>
+        <option value="afocus">Auto Focus</option>
+      </sdpi-select>
+    </sdpi-item>
+  </div>
+
+  <p class="p-local">🇧🇷 Português:</p>
+  <p class="p-text">
+    O botão de Foco permite controlar como a câmera ajusta a nitidez. Você pode fazer o ajuste manual usando Focus In para aproximar o ponto de foco, ou Focus Out para afastá-lo. Se preferir um controle automático, selecione Auto Focus, e a câmera ajustará o foco sozinha, mantendo o seu objeto sempre nítido sem precisar de ajustes manuais.
+  </p>
+
+  <p class="p-local">🇺🇸 English:</p>
+  <p class="p-text">
+    The Focus button lets you control how the camera adjusts its sharpness. You can manually fine-tune the focus using Focus In to bring the subject closer, or Focus Out to shift the focus farther away. If you prefer automatic control, select Auto Focus, and the camera will continuously adjust itself to keep your subject sharp without any manual adjustments.
+  </p>
+
+  <script src="./ptz-settings.js"></script> 
+</body>
+</html>

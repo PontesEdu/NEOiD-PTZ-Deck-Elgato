@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="sdpi-components.js"></script>
+  <title>Settings PTZ - SPEED</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+  <h3>NEOiD PTZ Deck - Speed</h3>
+
+  <div id="separate-field">
+    <sdpi-item label="speed">
+      <sdpi-select setting="speed" default="none" placeholder="Select">
+        <option value="none" disabled selected hidden>Select</option>
+        <option value="pan">P/T - Speed</option>
+        <option value="zoom">Zoom - Speed</option>
+        <option value="focus">Focus - Speed</option>
+      </sdpi-select>
+    </sdpi-item> 
+  </div>
+
+  <p class="p-local">🇧🇷 Português:</p>
+  <p class="p-text">
+    O botão Speed permite controlar a velocidade da camera. Você pode escolher entre três tipos de velocidade: Pan/Tilt, Zoom e Velocidade de Foco. Depois de selecionar o tipo de velocidade, é possível alternar entre os níveis de velocidade como em um ciclo de alternância. Cada vez que você aperta o botão, ele passa para o próximo modo nessa ordem: Slowest → Slow → Normal → Fast → Fastest, e depois retorna ao início. Isso permite ajustar rapidamente a velocidade de movimento ou zoom da câmera sem abrir menus, deixando a operação mais rápida e intuitiva.
+  </p>
+
+  <p class="p-local">🇺🇸 English:</p>
+  <p class="p-text">
+   The Speed button lets you control how fast your camera responds. You can choose between three speed types: Pan/Tilt, Zoom, and Focus Speed. After selecting the speed type, you can switch through the speed levels like a toggle cycle. Each time you press the button, it moves to the next speed mode in this order: Slowest → Slow → Normal → Fast → Fastest, then loops back to the beginning. This allows you to quickly adjust the camera’s movement or zoom speed without opening menus, making operation faster and more intuitive.
+  </p>
+  
+  <script src="./ptz-settings.js"></script>
+</body>
+</html>

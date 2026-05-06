@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="sdpi-components.js"></script>
+  <title>Settings PTZ - Preset</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h3>NEOiD PTZ Deck - Preset</h3>
+  
+  <sdpi-item label="image">
+    <sdpi-checkbox setting="image"></sdpi-checkbox>
+  </sdpi-item>
+
+  <div id="separate-field">
+    <sdpi-item label="number Preset">
+      <sdpi-select setting="numberPreset" id="select-presets" default="none" placeholder="Select direction">
+        <option value="none" disabled selected hidden>Select</option>
+      </sdpi-select>
+    </sdpi-item> 
+  </div>
+
+  <p class="p-local">🇧🇷 Português:</p>
+  <p class="p-text">
+    O botão Preset permite salvar e chamar posições da câmera de maneira rápida. Para salvar um preset, mantenha o botão pressionado por um segundo até que a posição seja registrada. Para chamar um preset salvo, basta clicar uma vez e a câmera se moverá automaticamente para a posição gravada. Se desejar adicionar uma imagem que represente onde o preset foi salvo, selecione o campo Image e escolha a foto que deseja exibir.
+    <br>
+    <br>
+    Obs: Câmeras da linha NEOiD by Telycam não exibem imagem neste recurso.
+  </p>
+
+  <p class="p-local">🇺🇸 English:</p>
+  <p class="p-text">
+    The Preset button allows you to save and recall camera positions quickly. To save a preset, press and hold the button for one second until the position is stored. To recall a saved preset, simply press the button once and the camera will move to the saved location. If you want to attach an image that represents where the preset was saved, select the Image field and choose the picture you want to display.
+    <br>
+    <br>
+    Note: Cameras from the NEOiD by Telycam line do not display images in this feature.
+  </p>
+
+  <script src="./ptz-settings.js"></script>
+  <script>
+    const select = document.getElementById("select-presets");
+
+    for (let i = 1; i <= 64; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i;
+      select.appendChild(option);
+    }    
+
+  </script>
+</body>
+</html>
