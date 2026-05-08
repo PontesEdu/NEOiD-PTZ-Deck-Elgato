@@ -1,6 +1,7 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../../api/api-telycam";
-import { APINeoid, SpeedType } from "../../api/api-neoid";
+import { APINeoid } from "../../api/api-neoid";
+import type { GlobalSettings } from "../../types";
 
 
 
@@ -9,8 +10,8 @@ export class FocusDial extends SingletonAction {
   private stopFocusTimer: NodeJS.Timeout | null = null;
 
   override async onDialRotate(ev: DialRotateEvent): Promise<void> {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
 
     if (!cameraIP) {
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
@@ -32,12 +33,11 @@ export class FocusDial extends SingletonAction {
       ev.action.setTitle(`Focus out`)
     }
 
-    const speed = globals.focusMode as SpeedType ?? "normal";
+    const speed = globals.focusMode ?? "normal";
 
     // Chamar API de movimento
     if (globals.isTelycam) {
-      const keyTelycam = globals.keyTelycam as number;
-      const api = new APITelycam({ IP: cameraIP, key: keyTelycam });
+      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
       api.MoveFocusTelycam(direction, speed);
     } else {
       const api = new APINeoid({ IP: cameraIP });
@@ -47,8 +47,7 @@ export class FocusDial extends SingletonAction {
     // Setup do timer de stop (ex: 200 ms após a última rotação)
     this.stopFocusTimer = setTimeout(() => {
       if (globals.isTelycam) {
-        const keyTelycam = globals.keyTelycam as number;
-        const api = new APITelycam({ IP: cameraIP, key: keyTelycam });
+        const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
         api.StopFocusTelycam();
       } else {
         const api = new APINeoid({ IP: cameraIP });
@@ -60,18 +59,18 @@ export class FocusDial extends SingletonAction {
   }
 
   override async onDialDown(ev: DialDownEvent): Promise<void> {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
     if (!cameraIP) {
       return;
     }
 
     await ev.action.setTitle("Auto Focus");
 
-    const speed = globals.focusMode as SpeedType ?? "normal";
+    const speed = globals.focusMode ?? "normal";
 
     if (globals.isTelycam) {
-      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam as number });
+      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
       api.MoveFocusTelycam("afocus", speed);
     } else {
       const api = new APINeoid({ IP: cameraIP });
@@ -80,9 +79,9 @@ export class FocusDial extends SingletonAction {
   }
 
   override async onWillAppear(ev: WillAppearEvent) {
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP
-    
+
     if(!cameraIP){
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName ?? ""}`)
@@ -93,9 +92,9 @@ export class FocusDial extends SingletonAction {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent){
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP
-    
+
     if(!cameraIP){
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName ?? ""}`)

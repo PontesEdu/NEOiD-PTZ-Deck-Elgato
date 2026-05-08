@@ -1,5 +1,6 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import { sendViscaUDP } from "../utils/send-visca-udp";
+import type { GlobalSettings } from "../types";
 
   type PtzOsdProps = {
     mode: "OSD" | "back" | "enter";
@@ -11,7 +12,7 @@ export class Osd extends SingletonAction<PtzOsdProps> {
   private isOsd: boolean = false;
 
   override async onWillAppear(ev: WillAppearEvent<PtzOsdProps>) {
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP;
     const mode = ev.payload.settings.mode;
 
@@ -37,7 +38,7 @@ export class Osd extends SingletonAction<PtzOsdProps> {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzOsdProps>){
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP;
     const mode = ev.payload.settings.mode;
 
@@ -57,15 +58,17 @@ export class Osd extends SingletonAction<PtzOsdProps> {
       await ev.action.setTitle("");
     } else {
 
-      this.isOsd = globals.isOsd === true || globals.isOsd === "true";
+      // cast intencional: SDK pode serializar boolean como string em alguns contextos
+      const rawOsd = globals.isOsd as boolean | string;
+      this.isOsd = rawOsd === true || rawOsd === "true";
       await ev.action.setTitle("");
       await ev.action.setImage(`imgs/actions/osd`);
     }
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzOsdProps>): Promise<void> {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
 
     const mode = ev.payload.settings.mode;
 
@@ -117,8 +120,6 @@ export class Osd extends SingletonAction<PtzOsdProps> {
       } else {
 
         await ev.action.setImage(`imgs/actions/osd`);
-
-        this.isOsd = globals.isOsd as boolean;
 
         this.isOsd = !this.isOsd;
         if (this.isOsd) {

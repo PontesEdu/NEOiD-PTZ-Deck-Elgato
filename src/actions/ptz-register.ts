@@ -7,6 +7,7 @@ import { PTZZoom } from "./ptz-zoom";
 import { Backlight } from "./backlight";
 import { Osd } from "./osd";
 import { checkCameraConnection } from "../utils/checkCameraConnection";
+import type { GlobalSettings } from "../types";
 import { LoginTelycam } from "../utils/login-telycam";
 import { FocusDial } from "./dials/focus-dials";
 import { ZoomDial } from './dials/zoom-dials';
@@ -43,7 +44,7 @@ export class PTZRegister extends SingletonAction<any> {
 
   override async onPropertyInspectorDidDisappear(ev: PropertyInspectorDidDisappearEvent) {
     const settings = await ev.action.getSettings();
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     //verificação se e undefined
     let cameraIP = settings.cameraIP === undefined ? false : settings.cameraIP
@@ -93,7 +94,7 @@ export class PTZRegister extends SingletonAction<any> {
 
   override async onWillAppear(ev: WillAppearEvent) {
     const settings = ev.payload.settings
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     //verificação se e undefined
     let cameraIP = settings.cameraIP === undefined ? false : settings.cameraIP as string
@@ -171,7 +172,7 @@ export class PTZRegister extends SingletonAction<any> {
 
   override async onKeyDown(ev: KeyDownEvent): Promise<void> {
     const settings = ev.payload.settings
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     
     //verificação se e undefined
     let cameraIP = settings.cameraIP === undefined ? false : settings.cameraIP as string

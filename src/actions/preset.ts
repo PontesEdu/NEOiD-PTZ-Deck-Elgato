@@ -1,4 +1,5 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import type { GlobalSettings } from "../types";
 import { imageSnapShot } from "../utils/snapshot";
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
@@ -16,7 +17,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
   override async onWillAppear(ev: WillAppearEvent<PtzPresetProps>) {
     const settings = ev.payload.settings;
     const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     const cameraIP = globals.cameraIP;
 
@@ -38,7 +39,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         }
         await ev.action.setTitle(`${presetNumber}`);
       }
-      
+
     } else {
       await ev.action.setImage("imgs/actions/preset/preset.png");
       await ev.action.setTitle("Select");
@@ -47,7 +48,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
   override async onKeyDown(ev: KeyDownEvent<PtzPresetProps>) {
     const settings = ev.payload.settings;
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP;
     const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
 
@@ -60,7 +61,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     this.longPress = false;
     this.pressTimer = setTimeout(() => {
       this.longPress = true;
-      this.savePreset(ev, String(cameraIP), presetNumber); // salva após 1s
+      this.savePreset(ev, cameraIP, presetNumber); // salva após 1s
     }, 1100);
   }
 
@@ -68,18 +69,17 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     clearTimeout(this.pressTimer);
 
     const settings = ev.payload.settings;
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
     const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
 
     if (!cameraIP || isNaN(presetNumber)) return;
-    
+
     // Se não foi um clique longo, chama o preset
     if (!this.longPress) {
 
       if(globals.isTelycam){
-        const keyTelycam = globals.keyTelycam as number
-        const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+        const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
         api.CallPreset(presetNumber)
       } else {
         const api = new APINeoid({IP: cameraIP});
@@ -100,11 +100,10 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
   private async savePreset(ev: KeyDownEvent<PtzPresetProps>, cameraIP: string, presetNumber: number) {
     // salva preset na câmera
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     if(globals.isTelycam){
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
       api.AddSetPreset(presetNumber)
     } else {
       const api = new APINeoid({IP: cameraIP});
@@ -141,7 +140,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
     const settings = ev.payload.settings;
     const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     const cameraIP = globals.cameraIP;
 
