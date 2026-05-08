@@ -59,19 +59,17 @@ export class ZoomDial extends SingletonAction {
 
   }
 
-  override async onWillAppear(ev: WillAppearEvent) {
+  private async updateButton(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
     if (await noCameraGuard(ev.action, globals)) return;
+    ev.action.setTitle(`Zoom`);
+  }
 
-    ev.action.setTitle(`Zoom`)
+  override async onWillAppear(ev: WillAppearEvent) {
+    await this.updateButton(ev);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
-    if (await noCameraGuard(ev.action, globals)) return;
-
-    ev.action.setTitle(`Zoom`)
+    await this.updateButton(ev);
   }
 }
