@@ -2,6 +2,7 @@ import streamDeck, { action, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppe
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 
 @action({ UUID: "com.neoid.ptzneoid.ptz-tracking" })
@@ -28,14 +29,12 @@ export class PTZTracking extends SingletonAction {
 
   override async onWillAppear(ev: WillAppearEvent) {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
 
-    if (!cameraIP) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
+    if (await noCameraGuard(ev.action, globals)) {
       ev.action.setImage("imgs/actions/tracking/tracking-off");
       return;
     }
+    const cameraIP = globals.cameraIP as string;
 
     const isTelycam = globals.isTelycam
 
@@ -87,12 +86,8 @@ export class PTZTracking extends SingletonAction {
   // lógica de cycle (clique curto)
   private async cycleMode(ev: KeyUpEvent) {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
-    if (!cameraIP) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     const isTelycam = globals.isTelycam
 
@@ -166,13 +161,9 @@ export class PTZTracking extends SingletonAction {
   // lógica de toggle (longpress)
   async toggleTracking(ev: KeyDownEvent) {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
 
-    if (!cameraIP) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     const isTelycam = globals.isTelycam
 

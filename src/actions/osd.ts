@@ -1,6 +1,7 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import { sendViscaUDP } from "../utils/send-visca-udp";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
   type PtzOsdProps = {
     mode: "OSD" | "back" | "enter";
@@ -13,15 +14,9 @@ export class Osd extends SingletonAction<PtzOsdProps> {
 
   override async onWillAppear(ev: WillAppearEvent<PtzOsdProps>) {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
     const mode = ev.payload.settings.mode;
 
-    if (!cameraIP) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
-    
+    if (await noCameraGuard(ev.action, globals)) return;
 
     if(mode === "back"){
       await ev.action.setTitle("Back OSB");
@@ -39,14 +34,9 @@ export class Osd extends SingletonAction<PtzOsdProps> {
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzOsdProps>){
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
     const mode = ev.payload.settings.mode;
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
 
     // Converte para booleano corretamente
     if(mode === "back"){
@@ -68,15 +58,10 @@ export class Osd extends SingletonAction<PtzOsdProps> {
 
   override async onKeyDown(ev: KeyDownEvent<PtzOsdProps>): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
-
     const mode = ev.payload.settings.mode;
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     if(globals.isTelycam){
       if(mode === "back"){

@@ -2,6 +2,7 @@ import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, 
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 export type PtzFocus = {
   speed?: number;
@@ -20,13 +21,8 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
     const settings = ev.payload.settings
 
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
 
     const direction = settings.mode as string;
     if (!["focusout", "focusin", "afocus" ].includes(direction)) {
@@ -52,13 +48,8 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
     const settings = ev.payload.settings
 
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
 
     const direction = settings.mode as string;
     if (!["focusout", "focusin", "afocus" ].includes(direction)) {
@@ -85,13 +76,9 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
     const settings = ev.payload.settings
 
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     const direction = settings.mode as "focusout" | "focusin" | "afocus";
 

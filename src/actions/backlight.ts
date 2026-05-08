@@ -2,6 +2,7 @@ import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, SingletonAct
 import { APINeoid } from "../api/api-neoid";
 import { APITelycam } from "../api/api-telycam";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 @action({ UUID: "com.neoid.ptzneoid.backlight" })
 export class Backlight extends SingletonAction {
@@ -45,12 +46,9 @@ export class Backlight extends SingletonAction {
 
   override async onKeyDown(ev: KeyDownEvent) {
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP;
 
-    if(!cameraIP){
-      await ev.action.setTitle(`No camera`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     this.isBacklight = !this.isBacklight;
 
