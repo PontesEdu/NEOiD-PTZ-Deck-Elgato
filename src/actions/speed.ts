@@ -10,11 +10,8 @@ export type PTZSpeedProps = {
 export class PTZSpeed extends SingletonAction<PTZSpeedProps> {
   private static readonly speedModes = ["slowest", "slow", "normal", "fast", "fastest"] as const;
 
-
-  override async onWillAppear(ev: WillAppearEvent<PTZSpeedProps>) {
+  private async updateVisual(ev: WillAppearEvent<PTZSpeedProps> | DidReceiveSettingsEvent<PTZSpeedProps>): Promise<void> {
     const settings = ev.payload.settings;
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
     const tipo = settings.speed as "pan" | "zoom" | "focus";
 
     if (!["pan", "zoom", "focus"].includes(tipo)) {
@@ -22,26 +19,18 @@ export class PTZSpeed extends SingletonAction<PTZSpeedProps> {
       return;
     }
 
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const modeKey = `${tipo}Mode` as "panMode" | "zoomMode" | "focusMode";
     const currentMode = globals[modeKey] ?? "normal";
     await ev.action.setTitle(`${tipo === "pan" ? "P/T" : tipo}:\n${currentMode}`);
   }
 
+  override async onWillAppear(ev: WillAppearEvent<PTZSpeedProps>) {
+    await this.updateVisual(ev);
+  }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PTZSpeedProps>) {
-    const settings = ev.payload.settings;
-    const tipo = settings.speed as "pan" | "zoom" | "focus";
-
-    if (!["pan", "zoom", "focus"].includes(tipo)) {
-      await ev.action.setTitle("Select");
-      return;
-    }
-
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const modeKey = `${tipo}Mode` as "panMode" | "zoomMode" | "focusMode";
-    const currentMode = globals[modeKey] ?? "normal";
-
-    await ev.action.setTitle(`${tipo === "pan" ? "P/T" : tipo}:\n${currentMode}`);
+    await this.updateVisual(ev);
   }
 
 
