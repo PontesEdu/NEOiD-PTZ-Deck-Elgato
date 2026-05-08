@@ -75,19 +75,17 @@ export class FocusDial extends SingletonAction {
     }
   }
 
-  override async onWillAppear(ev: WillAppearEvent) {
+  private async updateButton(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
     if (await noCameraGuard(ev.action, globals)) return;
-
-    ev.action.setTitle(`Focus`)
+    ev.action.setTitle(`Focus`);
   }
 
-  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent){
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+  override async onWillAppear(ev: WillAppearEvent) {
+    await this.updateButton(ev);
+  }
 
-    if (await noCameraGuard(ev.action, globals)) return;
-
-    ev.action.setTitle(`Focus`)
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
+    await this.updateButton(ev);
   }
 }
