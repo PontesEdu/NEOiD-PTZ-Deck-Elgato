@@ -1,0 +1,15 @@
+import type { SpeedType } from "./api/api-neoid";
+
+export type GlobalSettings = {
+  cameraIP: string | false;
+  camera: string;
+  isTelycam: boolean;
+  keyTelycam: number;
+  panMode: SpeedType;
+  zoomMode: SpeedType;
+  focusMode: SpeedType;
+  isBacklight: boolean;
+  isOsd: boolean;
+  // index signature compatível com JsonObject do SDK (sem unknown)
+  [key: string]: string | number | boolean | null;
+};

@@ -1,11 +1,12 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DialUpEvent, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
+import type { GlobalSettings } from "../types";
 
 
 @action({ UUID: "com.neoid.ptzneoid.ptz-tracking" })
 export class PTZTracking extends SingletonAction {
-  private pressTimer: any = null;
+  private pressTimer: ReturnType<typeof setTimeout> | null = null;
   private longPress = false;
 
   public trackingModes = [
@@ -26,9 +27,9 @@ export class PTZTracking extends SingletonAction {
 
 
   override async onWillAppear(ev: WillAppearEvent) {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
-    
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
+
     if (!cameraIP) {
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName}`)
@@ -36,8 +37,7 @@ export class PTZTracking extends SingletonAction {
       return;
     }
 
-
-    const isTelycam = globals.isTelycam as boolean
+    const isTelycam = globals.isTelycam
 
     const trackingActive = Boolean(globals[`trackingActive_${cameraIP}`]);
 
@@ -85,16 +85,16 @@ export class PTZTracking extends SingletonAction {
 
   // ----------------------------
   // lógica de cycle (clique curto)
-  private async cycleMode(ev: any) {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+  private async cycleMode(ev: KeyUpEvent) {
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
     if (!cameraIP) {
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName}`)
       return;
     }
 
-    const isTelycam = globals.isTelycam as boolean
+    const isTelycam = globals.isTelycam
 
     let nextMode
     if(isTelycam) {
@@ -105,8 +105,7 @@ export class PTZTracking extends SingletonAction {
       const nextIndex = (currentIndex + 1) % this.trackingModesTelycam.length;
       nextMode = this.trackingModesTelycam[nextIndex];
 
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
 
       // se o modo anterior estava ativo, desativa o tracking (apenas uma vez)
       if (trackingActive) {
@@ -165,9 +164,9 @@ export class PTZTracking extends SingletonAction {
 
   // ----------------------------
   // lógica de toggle (longpress)
-  async toggleTracking(ev: any) {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+  async toggleTracking(ev: KeyDownEvent) {
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
 
     if (!cameraIP) {
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
@@ -175,7 +174,7 @@ export class PTZTracking extends SingletonAction {
       return;
     }
 
-    const isTelycam = globals.isTelycam as boolean
+    const isTelycam = globals.isTelycam
 
     const trackingActive = Boolean(globals[`trackingActive_${cameraIP}`]);
     const newActive = !trackingActive;
@@ -211,8 +210,7 @@ export class PTZTracking extends SingletonAction {
     
     // envia comando de ativar/desativar
     if(isTelycam){
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
       await api.SetTrackingActive(newActive)
     } else {
       const apiNEOiD = new APINeoid({IP: cameraIP });
@@ -227,9 +225,9 @@ export class PTZTracking extends SingletonAction {
 
   // para pegar info da camera
   async fetchCameraTracking(cameraIP: string) {
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
-    const isTelycam = globals.isTelycam as boolean
+    const isTelycam = globals.isTelycam
 
     if(isTelycam) {
 

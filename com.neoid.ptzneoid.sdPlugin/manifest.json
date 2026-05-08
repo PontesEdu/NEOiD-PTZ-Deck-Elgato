@@ -178,28 +178,6 @@
 				}
 			],
 			"PropertyInspectorPath": "ui/dials/zoom-dial.html"
-		},
-		{
-			"UUID": "com.neoid.ptzneoid.tracking-dial",
-			"Name": "Tracking",
-			"UserTitleEnabled": false,
-			"Controllers": ["Encoder"],
-			"Encoder": {
-				"layout": "$A1",
-				"Icon": "imgs/plugin/logo-neoid",
-				"TriggerDescription": {
-					"Rotate": "Adjust tracking"
-				}
-      },
-			"Tooltip": "Controls the functions tracking",
-			"Icon": "imgs/plugin/logo-neoid@2x",
-			"States": [
-				{
-					"Image": "imgs/plugin/logo-neoid@2x",
-					"FontSize": 13
-				}
-			],
-			"PropertyInspectorPath": "ui/dials/tracking-dial.html"
 		}
 	],
 	"Category": "NEOiD PTZ Deck",

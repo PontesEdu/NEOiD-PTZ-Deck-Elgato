@@ -1,12 +1,12 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
-import { apiBaseCMD } from "../utils/ptz-api-base";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../api/api-telycam";
-import { APINeoid, SpeedType } from "../api/api-neoid";
+import { APINeoid } from "../api/api-neoid";
+import type { GlobalSettings } from "../types";
 
 export type PtzFocus = {
   speed?: number;
   mode: "focusout" | "focusin" | "afocus";
-  cameraIP: any;
+  cameraIP: string;
   camera: string;
 };
 
@@ -15,13 +15,13 @@ export type PtzFocus = {
 @action({ UUID: "com.neoid.ptzneoid.ptz-focus" })
 export class PTZFocus extends SingletonAction<PtzFocus> {
 
-  override async onWillAppear(ev: WillAppearEvent) {
+  override async onWillAppear(ev: WillAppearEvent<PtzFocus>) {
 
     const settings = ev.payload.settings
 
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP
-    
+
     if(!cameraIP){
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName}`)
@@ -51,7 +51,7 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzFocus>){
     const settings = ev.payload.settings
 
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP
 
     if(!cameraIP){
@@ -69,7 +69,7 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
     if(settings.mode === "focusin"){
       ev.action.setTitle(`Focus in`)
       ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-      
+
     } else if(settings.mode === "focusout"){
       ev.action.setTitle(`Focus out`)
       ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
@@ -78,14 +78,14 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
       ev.action.setTitle(`auto`)
       ev.action.setImage(`imgs/actions/focus/auto.png`)
     }
-    
+
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzFocus>): Promise<void> {
     const settings = ev.payload.settings
 
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP
 
     if(!cameraIP){
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
@@ -93,17 +93,17 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
       return;
     }
 
-    const direction = settings.mode as "focusout" | "focusin" | "afocus" ;
+    const direction = settings.mode as "focusout" | "focusin" | "afocus";
 
     if (!["focusout", "focusin", "afocus" ].includes(direction)) {
       await ev.action.setTitle("Select");
       return;
     }
-    
+
     if(direction === "focusin"){
       ev.action.setTitle(`Focus in`)
       ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-      
+
     } else if(direction === "focusout"){
       ev.action.setTitle(`Focus out`)
       ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
@@ -113,11 +113,10 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
       ev.action.setImage(`imgs/actions/focus/auto.png`)
     }
 
-    const speed = globals.focusMode as SpeedType ?? "normal"; 
+    const speed = globals.focusMode ?? "normal";
 
     if (globals.isTelycam) {
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
       api.MoveFocusTelycam(direction, speed)
     } else {
       const api = new APINeoid({IP: cameraIP});
@@ -126,16 +125,15 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
 
   }
 
-  override async onKeyUp(ev: KeyUpEvent<PtzFocus>): Promise<void> {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string
+  override async onKeyUp(_ev: KeyUpEvent<PtzFocus>): Promise<void> {
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP
 
     if(globals.isTelycam){
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP as string, key: globals.keyTelycam});
       api.StopFocusTelycam()
     } else {
-      const api = new APINeoid({IP: cameraIP});
+      const api = new APINeoid({IP: cameraIP as string});
       api.StopZoomAndFocus("focus")
     }
 

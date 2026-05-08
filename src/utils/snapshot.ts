@@ -1,5 +1,5 @@
 
-export async function imageSnapShot (cameraIP: any) {
+export async function imageSnapShot (cameraIP: string) {
   const response = await fetch(`http://${cameraIP}/snapshot.jpg`);
   
   if (!response.ok) throw new Error('Falha ao buscar a imagem');

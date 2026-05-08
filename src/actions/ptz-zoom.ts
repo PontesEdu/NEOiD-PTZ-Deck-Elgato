@@ -1,6 +1,7 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
-import { APINeoid, SpeedType } from "../api/api-neoid";
+import { APINeoid } from "../api/api-neoid";
 import { APITelycam } from "../api/api-telycam";
+import type { GlobalSettings } from "../types";
 
 export type PtzZoom = {
   speed?: number;
@@ -16,15 +17,19 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
 
   //Fn -> config settings Globals
   private async getGlobals() {
-    return await streamDeck.settings.getGlobalSettings();
+    return await streamDeck.settings.getGlobalSettings<GlobalSettings>();
   }
 
   private isValidDirection(direction: string): direction is "zoomin" | "zoomout" {
-    return this.validDirections.includes(direction as any);
+    return (this.validDirections as readonly string[]).includes(direction);
   }
 
-  private async updateButton(ev: any, direction?: "zoomin" | "zoomout", camera?: string) {
-    const globals = await streamDeck.settings.getGlobalSettings();
+  private async updateButton(
+    ev: WillAppearEvent<PtzZoom> | DidReceiveSettingsEvent<PtzZoom> | KeyDownEvent<PtzZoom>,
+    direction?: "zoomin" | "zoomout",
+    camera?: string | false,
+  ) {
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     if (!camera) {
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
@@ -44,17 +49,15 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
   override async onWillAppear(ev: WillAppearEvent<PtzZoom>) {
     const settings = ev.payload.settings;
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP as string;
 
-    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined, cameraIP);
+    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined, globals.cameraIP);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzZoom>) {
     const settings = ev.payload.settings;
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP as string;
 
-    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined, cameraIP);
+    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined, globals.cameraIP);
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzZoom>): Promise<void> {
@@ -62,18 +65,16 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
     const direction = this.isValidDirection(settings.direction) ? settings.direction : undefined;
 
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP as string;
+    const cameraIP = globals.cameraIP;
 
     await this.updateButton(ev, direction, cameraIP);
 
     if (!cameraIP || !direction) return;
 
-    //  API 
-    const speed = globals.zoomMode as SpeedType ?? "normal";
+    const speed = globals.zoomMode ?? "normal";
 
     if(globals.isTelycam){
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
       api.MoveZoomTelycam(direction, speed)
     } else {
       const api = new APINeoid({IP: cameraIP});
@@ -81,14 +82,13 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
     }
   }
 
-  override async onKeyUp(ev: KeyUpEvent<PtzZoom>): Promise<void> {
+  override async onKeyUp(_ev: KeyUpEvent<PtzZoom>): Promise<void> {
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP as string;
+    const cameraIP = globals.cameraIP;
     if (!cameraIP) return;
 
     if(globals.isTelycam){
-      const keyTelycam = globals.keyTelycam as number
-      const api = new APITelycam({IP: cameraIP, key: keyTelycam});
+      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
       api.StopZoomTelycam()
     } else {
       const api = new APINeoid({IP: cameraIP});

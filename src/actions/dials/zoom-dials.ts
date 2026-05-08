@@ -1,6 +1,7 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../../api/api-telycam";
-import { APINeoid, SpeedType } from "../../api/api-neoid";
+import { APINeoid } from "../../api/api-neoid";
+import type { GlobalSettings } from "../../types";
 
 
 
@@ -8,9 +9,9 @@ import { APINeoid, SpeedType } from "../../api/api-neoid";
 export class ZoomDial extends SingletonAction {
   private stopzoomTimer: NodeJS.Timeout | null = null;
 
-   override async onDialRotate(ev: DialRotateEvent): Promise<void> {
-    const globals = await streamDeck.settings.getGlobalSettings();
-    const cameraIP = globals.cameraIP as string;
+  override async onDialRotate(ev: DialRotateEvent): Promise<void> {
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const cameraIP = globals.cameraIP;
 
     if (!cameraIP) {
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
@@ -32,12 +33,11 @@ export class ZoomDial extends SingletonAction {
       ev.action.setTitle(`Zoom out`)
     }
 
-    const speed = globals.zoomMode as SpeedType ?? "normal";
+    const speed = globals.zoomMode ?? "normal";
 
     // Chamar API de movimento
     if (globals.isTelycam) {
-      const keyTelycam = globals.keyTelycam as number;
-      const api = new APITelycam({ IP: cameraIP, key: keyTelycam });
+      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
       api.MoveZoomTelycam(direction, speed);
     } else {
       const api = new APINeoid({ IP: cameraIP });
@@ -47,8 +47,7 @@ export class ZoomDial extends SingletonAction {
     // Setup do timer de stop (ex: 200 ms após a última rotação)
     this.stopzoomTimer = setTimeout(() => {
       if (globals.isTelycam) {
-        const keyTelycam = globals.keyTelycam as number;
-        const api = new APITelycam({ IP: cameraIP, key: keyTelycam });
+        const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
         api.StopZoomTelycam();
       } else {
         const api = new APINeoid({ IP: cameraIP });
@@ -59,14 +58,14 @@ export class ZoomDial extends SingletonAction {
     }, 200); // 200 ms sem girar = parar
   }
 
-  override async onDialDown(ev: DialDownEvent): Promise<void> {
-    
+  override async onDialDown(_ev: DialDownEvent): Promise<void> {
+
   }
 
   override async onWillAppear(ev: WillAppearEvent) {
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP
-    
+
     if(!cameraIP){
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName}`)
@@ -77,9 +76,9 @@ export class ZoomDial extends SingletonAction {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
-    const globals = await streamDeck.settings.getGlobalSettings();
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const cameraIP = globals.cameraIP
-    
+
     if(!cameraIP){
       const titleName = globals.camera === undefined ? "No camera" : globals.camera
       await ev.action.setTitle(`${titleName}`)
