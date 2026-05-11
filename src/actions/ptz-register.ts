@@ -11,7 +11,6 @@ import type { GlobalSettings } from "../types";
 import { LoginTelycam } from "../utils/login-telycam";
 import { FocusDial } from "./dials/focus-dials";
 import { ZoomDial } from './dials/zoom-dials';
-import { globalKeys } from "../utils/global-keys";
 
 
 
@@ -181,164 +180,118 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
 
 
   override async onKeyDown(ev: KeyDownEvent): Promise<void> {
-    const settings = ev.payload.settings
+    const settings = ev.payload.settings;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    
-    //verificação se e undefined
-    let cameraIP = settings.cameraIP === undefined ? false : settings.cameraIP as string
-    
-    if(!cameraIP) {
-      await ev.action.setSettings({...settings, cameraIP: globals.cameraIP});
-      cameraIP = globals.cameraIP as string
-      return
-    } 
 
-    let titleName: string;
-
-    const isTelycam  = settings.isTelycam === undefined ? false : settings.isTelycam
-    
-    if(isTelycam){
-      let sessionKeyTelycam: number | null = null;
-
-      let telycamUser = settings.telycamUser === undefined ? false : settings.telycamUser as string
-      let telycamPassword = settings.telycamPassword === undefined ? false : settings.telycamPassword as string
-      
-      if(!telycamUser || !telycamPassword){
-        titleName = `Not\nConnect\nTelycam`
-        await ev.action.setTitle(`${titleName}`)
-        await streamDeck.settings.setGlobalSettings({
-        ...globals,
-          cameraIP: false,
-          camera: "Not\nConnect\nTelycam",
-          isTelycam: false,
-        });
-        return;
-      }
-      
-      const key = await LoginTelycam({ip: cameraIP, user: telycamUser, password: telycamPassword})
-
-      // aqui não tem return por que precisamos atualizar as outras ações
-      if(!key){
-        titleName = `Not\nConnect\nTelycam`
-        await ev.action.setTitle(`${titleName}`)
-        await streamDeck.settings.setGlobalSettings({
-        ...globals,
-          cameraIP: false,
-          camera: "Not\nConnect\nTelycam",
-          isTelycam: false,
-        });
-
-        this.ptzTracking.actions.forEach(async (actionInstance) => {
-          actionInstance.getSettings()
-        });
-      } else {
-        sessionKeyTelycam = key;
-
-        titleName = settings.camera === undefined ? "" : settings.camera as string
-        await ev.action.setTitle(`${titleName}`)
-        
-        await streamDeck.settings.setGlobalSettings({
-          ...globals,
-          cameraIP: cameraIP,
-          camera: titleName,
-          keyTelycam: sessionKeyTelycam,
-          isTelycam: true,
-        });
-        
-      
-        this.ptzTracking.actions.forEach(async (ev) => {
-          const lastMode = String(globals[globalKeys.trackingModeTelycam(cameraIP)] || this.ptzTracking.trackingModesTelycam[0].value);
-          const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
-        
-          const modeInfo = this.ptzTracking.trackingModesTelycam.find(m => m.value === lastMode) || this.ptzTracking.trackingModesTelycam[0];
-
-          ev.setTitle(modeInfo.name);
-          ev.setImage(trackingActive ? "imgs/actions/tracking/tracking-on" : "imgs/actions/tracking/tracking-off");
-        }); 
-      }
-          
-    } else {
-      const checkCamera = await checkCameraConnection(cameraIP, this.timeCheck)
-
-      if(!checkCamera) {
-        ev.action.setTitle('Not\nConnect')
-
-        titleName = "No camera"
-        
-        await streamDeck.settings.setGlobalSettings({
-          ...globals,
-          cameraIP: false,
-          camera: titleName,
-          isTelycam: false,
-        });
-
-        this.ptzTracking.actions.forEach(async (actionInstance) => {
-          actionInstance.getSettings()
-        });
-
-      } else {
-        titleName = settings.camera === undefined ? "" : settings.camera as string
-
-        await ev.action.setTitle(`${titleName}`)
-        
-        await streamDeck.settings.setGlobalSettings({
-          ...globals,
-          cameraIP: cameraIP,
-          camera: titleName,
-          isTelycam: false,
-        });
-
-        /** 
-        * Para atualizar comandos e o visual do botão de outras ações
-        *  
-        */
-        const tracking = await this.ptzTracking.fetchCameraTracking(`${cameraIP}`);
-        // atualiza o visual de todos os botões de tracking
-        if (tracking) {
-          this.ptzTracking.actions.forEach(async (ev) => {
-  
-            const modeInfo = this.ptzTracking.trackingModes.find(m => m.value === tracking.trackMode)!;
-            ev.setTitle(modeInfo.name);
-            ev.setImage(tracking.trackActive ? "imgs/actions/tracking/tracking-on" : "imgs/actions/tracking/tracking-off");
-          });
-          
-        } 
-      }
+    const cameraIP = settings.cameraIP === undefined ? false : settings.cameraIP as string;
+    if (!cameraIP) {
+      await ev.action.setSettings({ ...settings, cameraIP: globals.cameraIP });
+      return;
     }
-    
-    
-    this.ptzControls.actions.forEach((actionInstance) => {
-      actionInstance.getSettings();
+
+    const isTelycam = settings.isTelycam === undefined ? false : settings.isTelycam;
+
+    if (isTelycam) {
+      const shouldBroadcast = await this.activateTelycam(cameraIP, settings, globals, ev);
+      if (!shouldBroadcast) return;
+    } else {
+      await this.activateNEOiD(cameraIP, settings, globals, ev);
+    }
+
+    this.broadcastCameraChange();
+  }
+
+  // Valida credenciais e conecta câmera Telycam.
+  // Retorna false apenas quando as credenciais estão ausentes (config incompleta).
+  // Retorna true nos demais casos (sucesso ou falha de login) para acionar o broadcast.
+  private async activateTelycam(
+    cameraIP: string,
+    settings: PtzRegisterSettings,
+    globals: GlobalSettings,
+    ev: KeyDownEvent
+  ): Promise<boolean> {
+    const telycamUser = settings.telycamUser as string | undefined;
+    const telycamPassword = settings.telycamPassword as string | undefined;
+
+    if (!telycamUser || !telycamPassword) {
+      await ev.action.setTitle(`Not\nConnect\nTelycam`);
+      await streamDeck.settings.setGlobalSettings({
+        ...globals,
+        cameraIP: false,
+        camera: "Not\nConnect\nTelycam",
+        isTelycam: false,
+      });
+      return false;
+    }
+
+    const key = await LoginTelycam({ ip: cameraIP, user: telycamUser, password: telycamPassword });
+
+    if (!key) {
+      await ev.action.setTitle(`Not\nConnect\nTelycam`);
+      await streamDeck.settings.setGlobalSettings({
+        ...globals,
+        cameraIP: false,
+        camera: "Not\nConnect\nTelycam",
+        isTelycam: false,
+      });
+      return true;
+    }
+
+    const titleName = settings.camera ?? "";
+    await ev.action.setTitle(titleName);
+    await streamDeck.settings.setGlobalSettings({
+      ...globals,
+      cameraIP,
+      camera: titleName,
+      keyTelycam: key,
+      isTelycam: true,
+    });
+    return true;
+  }
+
+  // Valida conectividade NEOiD, atualiza globals e busca estado de tracking da câmera.
+  private async activateNEOiD(
+    cameraIP: string,
+    settings: PtzRegisterSettings,
+    globals: GlobalSettings,
+    ev: KeyDownEvent
+  ): Promise<void> {
+    const checkCamera = await checkCameraConnection(cameraIP, this.timeCheck);
+
+    if (!checkCamera) {
+      ev.action.setTitle('Not\nConnect');
+      await streamDeck.settings.setGlobalSettings({
+        ...globals,
+        cameraIP: false,
+        camera: "No camera",
+        isTelycam: false,
+      });
+      return;
+    }
+
+    const titleName = settings.camera ?? "";
+    await ev.action.setTitle(titleName);
+    await streamDeck.settings.setGlobalSettings({
+      ...globals,
+      cameraIP,
+      camera: titleName,
+      isTelycam: false,
     });
 
+    // Lê estado de tracking da câmera e persiste nos globals antes do broadcast.
+    await this.ptzTracking.fetchCameraTracking(cameraIP);
+  }
 
-    this.ptzPreset.actions.forEach(actionInstance => {
-      actionInstance.getSettings()
-    });
-
-    this.ptzFocus.actions.forEach(actionInstance => {
-      actionInstance.getSettings()
-    });
-
-    this.ptzZoom.actions.forEach(actionInstance => {
-      actionInstance.getSettings()
-    });
-
-    this.ptzBacklight.actions.forEach(actionInstance => {
-      actionInstance.getSettings()
-    });
-
-    this.ptzOSD.actions.forEach(async (actionInstance) => {
-      actionInstance.getSettings()
-    });
-
-    this.focusDial.actions.forEach(async (actionInstance) => {
-      actionInstance.getSettings()
-    });
-
-    this.zoomDial.actions.forEach(async (actionInstance) => {
-      actionInstance.getSettings()
-    });
-  
+  // Dispara getSettings() em todos os botões registrados para que releiam os globals atualizados.
+  private broadcastCameraChange(): void {
+    this.ptzTracking.actions.forEach(a => a.getSettings());
+    this.ptzControls.actions.forEach(a => a.getSettings());
+    this.ptzPreset.actions.forEach(a => a.getSettings());
+    this.ptzFocus.actions.forEach(a => a.getSettings());
+    this.ptzZoom.actions.forEach(a => a.getSettings());
+    this.ptzBacklight.actions.forEach(a => a.getSettings());
+    this.ptzOSD.actions.forEach(a => a.getSettings());
+    this.focusDial.actions.forEach(a => a.getSettings());
+    this.zoomDial.actions.forEach(a => a.getSettings());
   }
 }
