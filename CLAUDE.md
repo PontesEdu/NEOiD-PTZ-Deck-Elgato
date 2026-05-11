@@ -39,8 +39,8 @@ Plugin para Elgato Stream Deck que controla câmeras PTZ via rede local. Suporta
 ### `getSettings()` como broadcast de re-render
 Chamar `actionInstance.getSettings()` dispara `onDidReceiveSettings` na instância, fazendo o botão reler os globals e atualizar seu visual. **Este é o único mecanismo de notificação cross-button.** O código que parece "buscar settings sem usar o retorno" está forçando um re-render em cascata — não remover.
 
-### Duas instâncias de cada classe em `plugin.ts`
-O SDK não oferece registro global por tipo de action. Para iterar botões ativos de uma action, `PTZRegister` precisa de uma referência à instância da classe. Por isso cada action é instanciada duas vezes: uma para `registerAction()`, outra injetada no construtor do `PTZRegister`. O `.actions` do SDK é compartilhado por UUID, então ambas enxergam os mesmos botões. **Não "simplificar" isso.**
+### `ActionRegistry` + instância única por action em `plugin.ts`
+Cada action é instanciada **uma vez** em `plugin.ts`, registrada no SDK via `registerAction()` e no `ActionRegistry` via `ActionRegistry.register()`. Quando `PTZRegister.broadcastCameraChange()` precisa que todos os botões releiam os globals, chama `ActionRegistry.broadcastGetSettings()` — que itera as instâncias registradas e chama `.actions.forEach(a => a.getSettings())` em cada uma. `PTZTracking` ainda é passado diretamente ao construtor do `PTZRegister` pois é necessário para chamar `fetchCameraTracking()` com tipagem. **Não remover o `ActionRegistry.register()` de nenhuma action sem verificar se ela precisa participar do broadcast.**
 
 ### Stop-on-release para movimentos contínuos
 `PTZControls`, `PTZZoom` e `PTZFocus`: `onKeyDown` → move, `onKeyUp` → para. Remover ou inverter essa ordem deixa a câmera travada em movimento.
@@ -82,7 +82,7 @@ O SDK não oferece registro global por tipo de action. Para iterar botões ativo
 
 ### Coisas que parecem erradas mas são intencionais
 - Múltiplas requisições para o mesmo comando → cobertura de firmware
-- Dois objetos da mesma classe em `plugin.ts` → necessário para iterar `.actions`
+- `ActionRegistry.register()` chamado em `plugin.ts` → necessário para participar do broadcast de re-render
 - `getSettings()` chamado sem usar o retorno → é o mecanismo de re-render
 - String com zero à esquerda em valores de velocidade → formatação VISCA/CGI
 

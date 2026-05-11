@@ -1,16 +1,9 @@
 import streamDeck, { action, KeyDownEvent, PropertyInspectorDidDisappearEvent, SingletonAction, WillAppearEvent, type DidReceiveSettingsEvent } from "@elgato/streamdeck";
-import { PTZControls } from "./ptz-controls";
 import { PTZTracking } from './ptz-tracking';
-import { PTZPreset } from "./preset";
-import { PTZFocus } from "./ptz-focus";
-import { PTZZoom } from "./ptz-zoom";
-import { Backlight } from "./backlight";
-import { Osd } from "./osd";
 import { checkCameraConnection } from "../utils/checkCameraConnection";
 import type { GlobalSettings } from "../types";
 import { LoginTelycam } from "../utils/login-telycam";
-import { FocusDial } from "./dials/focus-dials";
-import { ZoomDial } from './dials/zoom-dials';
+import { ActionRegistry } from "../utils/action-registry";
 
 
 
@@ -27,29 +20,12 @@ type PtzRegisterSettings = {
 @action({ UUID: "com.neoid.ptzneoid.ptz-register" })
 export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
   private timeCheck: number = 500
-  ptzControls: PTZControls
-  ptzTracking: PTZTracking
-  ptzPreset: PTZPreset
-  ptzFocus: PTZFocus
-  ptzZoom: PTZZoom
-  ptzBacklight: Backlight
-  ptzOSD: Osd
-  focusDial: FocusDial
-  zoomDial: ZoomDial
+  private ptzTracking: PTZTracking
 
-
-  constructor(ptzControls: PTZControls, ptzTracking: PTZTracking, preset: PTZPreset, ptzFocus: PTZFocus, ptzZoom: PTZZoom, backlight: Backlight, osd: Osd, focusDial: FocusDial, zoomDial: ZoomDial) {
-		super();
-		this.ptzControls = ptzControls;
-		this.ptzTracking = ptzTracking;
-    this.ptzPreset = preset;
-    this.ptzFocus = ptzFocus;
-    this.ptzZoom = ptzZoom;
-    this.ptzBacklight = backlight;
-    this.ptzOSD = osd;
-    this.focusDial = focusDial;
-    this.zoomDial = zoomDial;
-	}
+  constructor(ptzTracking: PTZTracking) {
+    super();
+    this.ptzTracking = ptzTracking;
+  }
 
   override async onPropertyInspectorDidDisappear(ev: PropertyInspectorDidDisappearEvent) {
     const settings = await ev.action.getSettings();
@@ -284,14 +260,6 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
 
   // Dispara getSettings() em todos os botões registrados para que releiam os globals atualizados.
   private broadcastCameraChange(): void {
-    this.ptzTracking.actions.forEach(a => a.getSettings());
-    this.ptzControls.actions.forEach(a => a.getSettings());
-    this.ptzPreset.actions.forEach(a => a.getSettings());
-    this.ptzFocus.actions.forEach(a => a.getSettings());
-    this.ptzZoom.actions.forEach(a => a.getSettings());
-    this.ptzBacklight.actions.forEach(a => a.getSettings());
-    this.ptzOSD.actions.forEach(a => a.getSettings());
-    this.focusDial.actions.forEach(a => a.getSettings());
-    this.zoomDial.actions.forEach(a => a.getSettings());
+    ActionRegistry.broadcastGetSettings();
   }
 }
