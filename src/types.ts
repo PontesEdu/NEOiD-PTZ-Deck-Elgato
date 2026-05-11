@@ -10,6 +10,7 @@ export type GlobalSettings = {
   focusMode: SpeedType;
   isBacklight: boolean;
   isOsd: boolean;
+  cameraIPControls: string | null;
   // index signature compatível com JsonObject do SDK (sem unknown)
   [key: string]: string | number | boolean | null;
 };
