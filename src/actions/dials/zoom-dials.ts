@@ -1,8 +1,7 @@
 import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { APITelycam } from "../../api/api-telycam";
-import { APINeoid } from "../../api/api-neoid";
 import type { GlobalSettings } from "../../types";
 import { noCameraGuard } from "../../utils/no-camera-guard";
+import { resolveCamera } from "../../utils/camera-api";
 
 
 
@@ -14,7 +13,6 @@ export class ZoomDial extends SingletonAction {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     if (await noCameraGuard(ev.action, globals)) return;
-    const cameraIP = globals.cameraIP as string;
 
     // Cancelar timer existente
     if (this.stopzoomTimer) {
@@ -33,24 +31,14 @@ export class ZoomDial extends SingletonAction {
     const speed = globals.zoomMode ?? "normal";
 
     // Chamar API de movimento
-    if (globals.isTelycam) {
-      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
-      api.MoveZoomTelycam(direction, speed);
-    } else {
-      const api = new APINeoid({ IP: cameraIP });
-      api.MoveZoomAndFocus(direction, speed);
-    }
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
+    ctx.api.moveZoom(direction, speed);
 
     // Setup do timer de stop (ex: 200 ms após a última rotação)
     this.stopzoomTimer = setTimeout(() => {
-      if (globals.isTelycam) {
-        const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
-        api.StopZoomTelycam();
-      } else {
-        const api = new APINeoid({ IP: cameraIP });
-        api.StopZoomAndFocus("zoom");
-      }
-      ev.action.setTitle(`Zoom`)
+      resolveCamera(globals)?.api.stopZoom();
+      ev.action.setTitle(`Zoom`);
       this.stopzoomTimer = null;
     }, 200); // 200 ms sem girar = parar
   }
@@ -78,11 +66,6 @@ export class ZoomDial extends SingletonAction {
     clearTimeout(this.stopzoomTimer);
     this.stopzoomTimer = null;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    if (!globals.cameraIP) return;
-    if (globals.isTelycam) {
-      new APITelycam({ IP: globals.cameraIP as string, key: globals.keyTelycam }).StopZoomTelycam();
-    } else {
-      new APINeoid({ IP: globals.cameraIP as string }).StopZoomAndFocus("zoom");
-    }
+    resolveCamera(globals)?.api.stopZoom();
   }
 }

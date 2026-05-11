@@ -1,8 +1,7 @@
 import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
-import { APITelycam } from "../../api/api-telycam";
-import { APINeoid } from "../../api/api-neoid";
 import type { GlobalSettings } from "../../types";
 import { noCameraGuard } from "../../utils/no-camera-guard";
+import { resolveCamera } from "../../utils/camera-api";
 
 
 
@@ -14,7 +13,6 @@ export class FocusDial extends SingletonAction {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     if (await noCameraGuard(ev.action, globals)) return;
-    const cameraIP = globals.cameraIP as string;
 
     // Cancelar timer existente
     if (this.stopFocusTimer) {
@@ -33,46 +31,25 @@ export class FocusDial extends SingletonAction {
     const speed = globals.focusMode ?? "normal";
 
     // Chamar API de movimento
-    if (globals.isTelycam) {
-      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
-      api.MoveFocusTelycam(direction, speed);
-    } else {
-      const api = new APINeoid({ IP: cameraIP });
-      api.MoveZoomAndFocus(direction, speed);
-    }
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
+    ctx.api.moveFocus(direction, speed);
 
     // Setup do timer de stop (ex: 200 ms após a última rotação)
     this.stopFocusTimer = setTimeout(() => {
-      if (globals.isTelycam) {
-        const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
-        api.StopFocusTelycam();
-      } else {
-        const api = new APINeoid({ IP: cameraIP });
-        api.StopZoomAndFocus("focus");
-      }
-      ev.action.setTitle(`Focus`)
+      resolveCamera(globals)?.api.stopFocus();
+      ev.action.setTitle(`Focus`);
       this.stopFocusTimer = null;
     }, 200); // 200 ms sem girar = parar
   }
 
   override async onDialDown(ev: DialDownEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
-    if (!cameraIP) {
-      return;
-    }
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
 
     await ev.action.setTitle("Auto Focus");
-
-    const speed = globals.focusMode ?? "normal";
-
-    if (globals.isTelycam) {
-      const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
-      api.MoveFocusTelycam("afocus", speed);
-    } else {
-      const api = new APINeoid({ IP: cameraIP });
-      api.MoveZoomAndFocus("afocus", speed);
-    }
+    ctx.api.moveFocus("afocus", globals.focusMode ?? "normal");
   }
 
   private async updateButton(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
@@ -94,11 +71,6 @@ export class FocusDial extends SingletonAction {
     clearTimeout(this.stopFocusTimer);
     this.stopFocusTimer = null;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    if (!globals.cameraIP) return;
-    if (globals.isTelycam) {
-      new APITelycam({ IP: globals.cameraIP as string, key: globals.keyTelycam }).StopFocusTelycam();
-    } else {
-      new APINeoid({ IP: globals.cameraIP as string }).StopZoomAndFocus("focus");
-    }
+    resolveCamera(globals)?.api.stopFocus();
   }
 }

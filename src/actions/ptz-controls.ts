@@ -3,7 +3,7 @@ import type { GlobalSettings } from "../types";
 import { checkCameraConnection } from "../utils/checkCameraConnection";
 import { PTZ_DIRECTIONS, PTZDirection } from "../api/api-neoid";
 import { APINeoid } from "../api/api-neoid";
-import { APITelycam } from "../api/api-telycam";
+import { resolveCamera } from "../utils/camera-api";
 
 export type PtzSettings = {
   speed?: number;
@@ -167,13 +167,9 @@ export class PTZControls extends SingletonAction<PtzSettings> {
       const titleName = globals.camera === undefined ? "" : globals.camera
       await ev.action.setTitle(titleName ?? "")
 
-      if(globals.isTelycam) {
-        const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-        await api.MoveTelycam(direction, speed)
-      } else {
-        const api = new APINeoid({IP: cameraIP});
-        await api.Move(direction, speed)
-      }
+      const ctx = resolveCamera(globals);
+      if (!ctx) return;
+      await ctx.api.move(direction, speed);
     }
   }
 
@@ -193,13 +189,9 @@ export class PTZControls extends SingletonAction<PtzSettings> {
       const cameraIP = globals.cameraIP
       if (!cameraIP) return;
 
-      if(globals.isTelycam){
-        const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-        api.StopTelycamControls()
-      } else {
-        const api = new APINeoid({IP: cameraIP});
-        api.StopMove()
-      }
+      const ctx = resolveCamera(globals);
+      if (!ctx) return;
+      ctx.api.stopMove();
     }
   }
 }

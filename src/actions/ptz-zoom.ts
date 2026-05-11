@@ -1,8 +1,7 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
-import { APINeoid } from "../api/api-neoid";
-import { APITelycam } from "../api/api-telycam";
 import type { GlobalSettings } from "../types";
 import { noCameraGuard } from "../utils/no-camera-guard";
+import { resolveCamera } from "../utils/camera-api";
 
 export type PtzZoom = {
   speed?: number;
@@ -62,30 +61,16 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
 
     if (!direction) return;
 
-    const cameraIP = globals.cameraIP as string;
-    const speed = globals.zoomMode ?? "normal";
-
-    if(globals.isTelycam){
-      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-      api.MoveZoomTelycam(direction, speed)
-    } else {
-      const api = new APINeoid({IP: cameraIP});
-      api.MoveZoomAndFocus(direction, speed)
-    }
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
+    ctx.api.moveZoom(direction, globals.zoomMode ?? "normal");
   }
 
   override async onKeyUp(_ev: KeyUpEvent<PtzZoom>): Promise<void> {
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP;
-    if (!cameraIP) return;
-
-    if(globals.isTelycam){
-      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-      api.StopZoomTelycam()
-    } else {
-      const api = new APINeoid({IP: cameraIP});
-      api.StopZoomAndFocus("zoom")
-    }
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
+    ctx.api.stopZoom();
   }
 }
 
