@@ -1,7 +1,8 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../../api/api-telycam";
 import { APINeoid } from "../../api/api-neoid";
 import type { GlobalSettings } from "../../types";
+import { noCameraGuard } from "../../utils/no-camera-guard";
 
 
 
@@ -11,13 +12,9 @@ export class ZoomDial extends SingletonAction {
 
   override async onDialRotate(ev: DialRotateEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
 
-    if (!cameraIP) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName ?? ""}`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     // Cancelar timer existente
     if (this.stopzoomTimer) {
@@ -62,29 +59,30 @@ export class ZoomDial extends SingletonAction {
 
   }
 
-  override async onWillAppear(ev: WillAppearEvent) {
+  private async updateButton(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
+    if (await noCameraGuard(ev.action, globals)) return;
+    ev.action.setTitle(`Zoom`);
+  }
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return
-    }
-
-    ev.action.setTitle(`Zoom`)
+  override async onWillAppear(ev: WillAppearEvent) {
+    await this.updateButton(ev);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
+    await this.updateButton(ev);
+  }
+
+  override async onWillDisappear(_ev: WillDisappearEvent): Promise<void> {
+    if (!this.stopzoomTimer) return;
+    clearTimeout(this.stopzoomTimer);
+    this.stopzoomTimer = null;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
-
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return
+    if (!globals.cameraIP) return;
+    if (globals.isTelycam) {
+      new APITelycam({ IP: globals.cameraIP as string, key: globals.keyTelycam }).StopZoomTelycam();
+    } else {
+      new APINeoid({ IP: globals.cameraIP as string }).StopZoomAndFocus("zoom");
     }
-
-    ev.action.setTitle(`Zoom`)
   }
 }

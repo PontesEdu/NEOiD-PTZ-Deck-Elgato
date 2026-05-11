@@ -1,7 +1,8 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../../api/api-telycam";
 import { APINeoid } from "../../api/api-neoid";
 import type { GlobalSettings } from "../../types";
+import { noCameraGuard } from "../../utils/no-camera-guard";
 
 
 
@@ -11,13 +12,9 @@ export class FocusDial extends SingletonAction {
 
   override async onDialRotate(ev: DialRotateEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
 
-    if (!cameraIP) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName ?? ""}`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     // Cancelar timer existente
     if (this.stopFocusTimer) {
@@ -78,29 +75,30 @@ export class FocusDial extends SingletonAction {
     }
   }
 
-  override async onWillAppear(ev: WillAppearEvent) {
+  private async updateButton(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
-
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName ?? ""}`)
-      return
-    }
-
-    ev.action.setTitle(`Focus`)
+    if (await noCameraGuard(ev.action, globals)) return;
+    ev.action.setTitle(`Focus`);
   }
 
-  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent){
+  override async onWillAppear(ev: WillAppearEvent) {
+    await this.updateButton(ev);
+  }
+
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
+    await this.updateButton(ev);
+  }
+
+  override async onWillDisappear(_ev: WillDisappearEvent): Promise<void> {
+    if (!this.stopFocusTimer) return;
+    clearTimeout(this.stopFocusTimer);
+    this.stopFocusTimer = null;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
-
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName ?? ""}`)
-      return
+    if (!globals.cameraIP) return;
+    if (globals.isTelycam) {
+      new APITelycam({ IP: globals.cameraIP as string, key: globals.keyTelycam }).StopFocusTelycam();
+    } else {
+      new APINeoid({ IP: globals.cameraIP as string }).StopZoomAndFocus("focus");
     }
-
-    ev.action.setTitle(`Focus`)
   }
 }

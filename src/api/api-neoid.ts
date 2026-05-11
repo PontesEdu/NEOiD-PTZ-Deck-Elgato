@@ -1,34 +1,17 @@
-export const panTiltSpeed= {
+import type { SpeedType } from "../types";
+import { PTZ_DIRECTIONS, zoomFocusSpeed } from "../constants";
+import type { PTZDirection } from "../constants";
+
+export type { SpeedType, PTZDirection };
+export { PTZ_DIRECTIONS, zoomFocusSpeed };
+
+export const panTiltSpeed = {
   slowest: '06',
   slow: '09',
   normal: 12,
   fast: 16,
   fastest: 23,
-} as const
-export type SpeedType = keyof typeof panTiltSpeed
-
-export const zoomFocusSpeed = {
-  slowest: 1,
-  slow: 3,
-  normal: 4,
-  fast: 6,
-  fastest: 7,
-} as const
-
-
-
-export const PTZ_DIRECTIONS = [
-  'up',
-  'down',
-  'left',
-  'right',
-  'leftup',
-  'leftdown',
-  'rightup',
-  'rightdown',
-  'home',
-] as const
-export type PTZDirection = typeof PTZ_DIRECTIONS[number]
+} as const;
 
 
 // Method to MOVE

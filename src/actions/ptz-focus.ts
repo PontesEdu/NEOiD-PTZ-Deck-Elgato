@@ -2,6 +2,7 @@ import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, 
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 export type PtzFocus = {
   speed?: number;
@@ -15,83 +16,45 @@ export type PtzFocus = {
 @action({ UUID: "com.neoid.ptzneoid.ptz-focus" })
 export class PTZFocus extends SingletonAction<PtzFocus> {
 
-  override async onWillAppear(ev: WillAppearEvent<PtzFocus>) {
-
-    const settings = ev.payload.settings
-
+  private async updateVisual(ev: WillAppearEvent<PtzFocus> | DidReceiveSettingsEvent<PtzFocus>): Promise<void> {
+    const settings = ev.payload.settings;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
 
     const direction = settings.mode as string;
-    if (!["focusout", "focusin", "afocus" ].includes(direction)) {
+    if (!["focusout", "focusin", "afocus"].includes(direction)) {
       await ev.action.setTitle("Select");
       return;
-    } 
+    }
 
-    if(settings.mode === "focusin"){
-      ev.action.setTitle(`Focus in`)
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-      
-    } else if(settings.mode === "focusout"){
-      ev.action.setTitle(`Focus out`)
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-
-    } else if(settings.mode === "afocus") {
-      ev.action.setTitle(`auto`)
-      ev.action.setImage(`imgs/actions/focus/auto.png`)
+    if (settings.mode === "focusin") {
+      ev.action.setTitle(`Focus in`);
+      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`);
+    } else if (settings.mode === "focusout") {
+      ev.action.setTitle(`Focus out`);
+      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`);
+    } else if (settings.mode === "afocus") {
+      ev.action.setTitle(`auto`);
+      ev.action.setImage(`imgs/actions/focus/auto.png`);
     }
   }
 
-  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzFocus>){
-    const settings = ev.payload.settings
+  override async onWillAppear(ev: WillAppearEvent<PtzFocus>) {
+    await this.updateVisual(ev);
+  }
 
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
-
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
-
-    const direction = settings.mode as string;
-    if (!["focusout", "focusin", "afocus" ].includes(direction)) {
-      await ev.action.setTitle("Select");
-      return;
-    }
-
-    if(settings.mode === "focusin"){
-      ev.action.setTitle(`Focus in`)
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-
-    } else if(settings.mode === "focusout"){
-      ev.action.setTitle(`Focus out`)
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-
-    } else if(settings.mode === "afocus") {
-      ev.action.setTitle(`auto`)
-      ev.action.setImage(`imgs/actions/focus/auto.png`)
-    }
-
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzFocus>) {
+    await this.updateVisual(ev);
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzFocus>): Promise<void> {
     const settings = ev.payload.settings
 
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
 
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     const direction = settings.mode as "focusout" | "focusin" | "afocus";
 

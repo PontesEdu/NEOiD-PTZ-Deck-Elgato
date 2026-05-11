@@ -1,8 +1,9 @@
-import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../types";
 import { imageSnapShot } from "../utils/snapshot";
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 type PtzPresetProps = {
   numberPreset: number | "undefined";
@@ -19,12 +20,8 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
-    const cameraIP = globals.cameraIP;
-
-    if(!cameraIP){
-      await ev.action.setTitle(`${globals.camera}`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     if (!isNaN(presetNumber)) {
       if(globals.isTelycam){
@@ -142,12 +139,8 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
-    const cameraIP = globals.cameraIP;
-
-    if(!cameraIP){
-      await ev.action.setTitle(`${globals.camera}`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     if (!isNaN(presetNumber)) {
       if(settings.image){
@@ -161,6 +154,13 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     } else {
       await ev.action.setImage("imgs/actions/preset/preset.png");
       await ev.action.setTitle("Select");
+    }
+  }
+
+  override onWillDisappear(_ev: WillDisappearEvent): void {
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = undefined;
     }
   }
 }

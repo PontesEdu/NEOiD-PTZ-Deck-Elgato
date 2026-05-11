@@ -2,6 +2,7 @@ import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, SingletonAct
 import { APINeoid } from "../api/api-neoid";
 import { APITelycam } from "../api/api-telycam";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 @action({ UUID: "com.neoid.ptzneoid.backlight" })
 export class Backlight extends SingletonAction {
@@ -16,14 +17,9 @@ export class Backlight extends SingletonAction {
     return value === true || value === "true";
   }
 
-  private async updateTitle(action: any, cameraIP: string | false, state?: boolean) {
+  private async updateTitle(action: any, state?: boolean) {
     const globals = await this.getGlobals();
-    if(!cameraIP){
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await action.setTitle(`${titleName}`)
-      return;
-    }
-
+    if (await noCameraGuard(action, globals)) return;
     if (state !== undefined) {
       await action.setTitle(state ? "Backlight\nON" : "Backlight\nOFF");
     }
@@ -32,7 +28,7 @@ export class Backlight extends SingletonAction {
   private async refreshState(ev: { action: any }) {
     const globals = await this.getGlobals();
     this.isBacklight = this.parseBacklight(globals.isBacklight);
-    await this.updateTitle(ev.action, globals.cameraIP, this.isBacklight);
+    await this.updateTitle(ev.action, this.isBacklight);
   }
 
   override async onWillAppear(ev: WillAppearEvent) {
@@ -45,12 +41,9 @@ export class Backlight extends SingletonAction {
 
   override async onKeyDown(ev: KeyDownEvent) {
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP;
 
-    if(!cameraIP){
-      await ev.action.setTitle(`No camera`)
-      return
-    }
+    if (await noCameraGuard(ev.action, globals)) return;
+    const cameraIP = globals.cameraIP as string;
 
     this.isBacklight = !this.isBacklight;
 
@@ -64,7 +57,7 @@ export class Backlight extends SingletonAction {
       await api.toggleBacklight(this.isBacklight);
     }
 
-    await this.updateTitle(ev.action, cameraIP, this.isBacklight);
+    await this.updateTitle(ev.action, this.isBacklight);
 
     await streamDeck.settings.setGlobalSettings({
       ...globals,
