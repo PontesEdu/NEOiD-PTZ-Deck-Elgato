@@ -89,10 +89,16 @@ export class FocusDial extends SingletonAction {
     await this.updateButton(ev);
   }
 
-  override onWillDisappear(_ev: WillDisappearEvent): void {
-    if (this.stopFocusTimer) {
-      clearTimeout(this.stopFocusTimer);
-      this.stopFocusTimer = null;
+  override async onWillDisappear(_ev: WillDisappearEvent): Promise<void> {
+    if (!this.stopFocusTimer) return;
+    clearTimeout(this.stopFocusTimer);
+    this.stopFocusTimer = null;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    if (!globals.cameraIP) return;
+    if (globals.isTelycam) {
+      new APITelycam({ IP: globals.cameraIP as string, key: globals.keyTelycam }).StopFocusTelycam();
+    } else {
+      new APINeoid({ IP: globals.cameraIP as string }).StopZoomAndFocus("focus");
     }
   }
 }

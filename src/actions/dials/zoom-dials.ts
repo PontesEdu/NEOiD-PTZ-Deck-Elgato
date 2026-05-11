@@ -73,10 +73,16 @@ export class ZoomDial extends SingletonAction {
     await this.updateButton(ev);
   }
 
-  override onWillDisappear(_ev: WillDisappearEvent): void {
-    if (this.stopzoomTimer) {
-      clearTimeout(this.stopzoomTimer);
-      this.stopzoomTimer = null;
+  override async onWillDisappear(_ev: WillDisappearEvent): Promise<void> {
+    if (!this.stopzoomTimer) return;
+    clearTimeout(this.stopzoomTimer);
+    this.stopzoomTimer = null;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    if (!globals.cameraIP) return;
+    if (globals.isTelycam) {
+      new APITelycam({ IP: globals.cameraIP as string, key: globals.keyTelycam }).StopZoomTelycam();
+    } else {
+      new APINeoid({ IP: globals.cameraIP as string }).StopZoomAndFocus("zoom");
     }
   }
 }
