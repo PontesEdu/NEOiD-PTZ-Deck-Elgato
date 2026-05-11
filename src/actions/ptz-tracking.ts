@@ -1,4 +1,4 @@
-import streamDeck, { action, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
 import type { GlobalSettings } from "../types";
@@ -27,7 +27,7 @@ export class PTZTracking extends SingletonAction {
 
 
 
-  override async onWillAppear(ev: WillAppearEvent) {
+  private async updateVisual(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     if (await noCameraGuard(ev.action, globals)) {
@@ -35,25 +35,28 @@ export class PTZTracking extends SingletonAction {
       return;
     }
     const cameraIP = globals.cameraIP as string;
-
-    const isTelycam = globals.isTelycam
-
+    const isTelycam = globals.isTelycam;
     const trackingActive = Boolean(globals[`trackingActive_${cameraIP}`]);
 
-    let modeInfo
-    if(isTelycam) {
+    let modeInfo;
+    if (isTelycam) {
       const lastMode = String(globals[`trackingModeTelycam_${cameraIP}`] || this.trackingModesTelycam[0].value);
       modeInfo = this.trackingModesTelycam.find(m => m.value === lastMode) || this.trackingModesTelycam[0];
-      
     } else {
       const lastMode = String(globals[`trackingMode_${cameraIP}`] || this.trackingModes[0].value);
       modeInfo = this.trackingModes.find(m => m.value === lastMode) || this.trackingModes[0];
-     
     }
-    
-    // atualiza visual imediatamente para dar feedback ao usuário
+
     ev.action.setTitle(modeInfo.name);
     ev.action.setImage(trackingActive ? "imgs/actions/tracking/tracking-on" : "imgs/actions/tracking/tracking-off");
+  }
+
+  override async onWillAppear(ev: WillAppearEvent) {
+    await this.updateVisual(ev);
+  }
+
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
+    await this.updateVisual(ev);
   }
 
 
