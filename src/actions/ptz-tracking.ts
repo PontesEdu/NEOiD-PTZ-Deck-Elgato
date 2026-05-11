@@ -1,4 +1,4 @@
-import streamDeck, { action, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
 import type { GlobalSettings } from "../types";
@@ -213,6 +213,13 @@ export class PTZTracking extends SingletonAction {
 
 
 
+
+  override onWillDisappear(_ev: WillDisappearEvent): void {
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = null;
+    }
+  }
 
   // para pegar info da camera
   async fetchCameraTracking(cameraIP: string) {

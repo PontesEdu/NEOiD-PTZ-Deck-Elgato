@@ -1,4 +1,4 @@
-import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../types";
 import { imageSnapShot } from "../utils/snapshot";
 import { APITelycam } from "../api/api-telycam";
@@ -154,6 +154,13 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     } else {
       await ev.action.setImage("imgs/actions/preset/preset.png");
       await ev.action.setTitle("Select");
+    }
+  }
+
+  override onWillDisappear(_ev: WillDisappearEvent): void {
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = undefined;
     }
   }
 }
