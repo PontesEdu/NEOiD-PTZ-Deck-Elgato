@@ -4,6 +4,7 @@ import { imageSnapShot } from "../utils/snapshot";
 import { APITelycam } from "../api/api-telycam";
 import { APINeoid } from "../api/api-neoid";
 import { noCameraGuard } from "../utils/no-camera-guard";
+import { globalKeys } from "../utils/global-keys";
 
 type PtzPresetProps = {
   numberPreset: number | "undefined";
@@ -29,7 +30,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         await ev.action.setTitle(`${presetNumber}`);
       } else {
         if(settings.image){
-          const image = globals[`presetImage${presetNumber}${cameraIP}`]
+          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
           await ev.action.setImage(`${image}`);
         } else {
           await ev.action.setImage("");
@@ -83,7 +84,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         api.CallPreset(presetNumber)
         
         if(settings.image){
-          const image = globals[`presetImage${presetNumber}${cameraIP}`]
+          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
           await ev.action.setImage(`${image}`);
         } else {
           await ev.action.setImage("");
@@ -124,7 +125,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
         await streamDeck.settings.setGlobalSettings({
           ...globals,
-          [`presetImage${presetNumber}${cameraIP}`]: snapshot
+          [globalKeys.presetImage(presetNumber, cameraIP)]: snapshot
         });
 
         await ev.action.setImage(snapshot);
@@ -144,7 +145,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
     if (!isNaN(presetNumber)) {
       if(settings.image){
-        const image = globals[`presetImage${presetNumber}${cameraIP}`]
+        const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
         await ev.action.setImage(`${image}`);
       } else {
         await ev.action.setImage("");

@@ -11,6 +11,7 @@ import type { GlobalSettings } from "../types";
 import { LoginTelycam } from "../utils/login-telycam";
 import { FocusDial } from "./dials/focus-dials";
 import { ZoomDial } from './dials/zoom-dials';
+import { globalKeys } from "../utils/global-keys";
 
 
 
@@ -246,8 +247,8 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
         
       
         this.ptzTracking.actions.forEach(async (ev) => {
-          const lastMode = String(globals[`trackingModeTelycam_${cameraIP}`] || this.ptzTracking.trackingModesTelycam[0].value);
-          const trackingActive = Boolean(globals[`trackingActive_${cameraIP}`]);
+          const lastMode = String(globals[globalKeys.trackingModeTelycam(cameraIP)] || this.ptzTracking.trackingModesTelycam[0].value);
+          const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
         
           const modeInfo = this.ptzTracking.trackingModesTelycam.find(m => m.value === lastMode) || this.ptzTracking.trackingModesTelycam[0];
 

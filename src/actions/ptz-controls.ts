@@ -162,20 +162,21 @@ export class PTZControls extends SingletonAction<PtzSettings> {
 
     } else {
       const cameraIP = globals.cameraIP
+      if (!cameraIP) return;
 
       const titleName = globals.camera === undefined ? "" : globals.camera
       await ev.action.setTitle(titleName ?? "")
 
       if(globals.isTelycam) {
-        const api = new APITelycam({IP: cameraIP as string, key: globals.keyTelycam});
+        const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
         await api.MoveTelycam(direction, speed)
       } else {
-        const api = new APINeoid({IP: cameraIP as string});
+        const api = new APINeoid({IP: cameraIP});
         await api.Move(direction, speed)
       }
     }
   }
-  
+
 
   override async onKeyUp(ev: KeyUpEvent): Promise<void> {
     // configuraçoes globais que estao vindo de outro
@@ -190,12 +191,13 @@ export class PTZControls extends SingletonAction<PtzSettings> {
       api.StopMove()
     } else {
       const cameraIP = globals.cameraIP
+      if (!cameraIP) return;
 
       if(globals.isTelycam){
-        const api = new APITelycam({IP: cameraIP as string, key: globals.keyTelycam});
+        const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
         api.StopTelycamControls()
       } else {
-        const api = new APINeoid({IP: cameraIP as string});
+        const api = new APINeoid({IP: cameraIP});
         api.StopMove()
       }
     }

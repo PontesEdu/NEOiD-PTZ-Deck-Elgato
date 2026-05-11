@@ -2,6 +2,7 @@ import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, 
 import { APINeoid } from "../api/api-neoid";
 import { APITelycam } from "../api/api-telycam";
 import type { GlobalSettings } from "../types";
+import { noCameraGuard } from "../utils/no-camera-guard";
 
 export type PtzZoom = {
   speed?: number;
@@ -27,21 +28,11 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
   private async updateButton(
     ev: WillAppearEvent<PtzZoom> | DidReceiveSettingsEvent<PtzZoom> | KeyDownEvent<PtzZoom>,
     direction?: "zoomin" | "zoomout",
-    camera?: string | false,
   ) {
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
-    if (!camera) {
-      const titleName = globals.camera === undefined ? "No camera" : globals.camera
-      await ev.action.setTitle(`${titleName}`)
-      return;
-    }
-
     if (!direction) {
       await ev.action.setTitle("Select");
       return;
     }
-
     await ev.action.setTitle(direction === "zoomin" ? "Zoom in" : "Zoom out");
     await ev.action.setImage(`imgs/actions/zoom/${direction}.png`);
   }
@@ -49,15 +40,15 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
   override async onWillAppear(ev: WillAppearEvent<PtzZoom>) {
     const settings = ev.payload.settings;
     const globals = await this.getGlobals();
-
-    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined, globals.cameraIP);
+    if (await noCameraGuard(ev.action, globals)) return;
+    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzZoom>) {
     const settings = ev.payload.settings;
     const globals = await this.getGlobals();
-
-    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined, globals.cameraIP);
+    if (await noCameraGuard(ev.action, globals)) return;
+    await this.updateButton(ev, this.isValidDirection(settings.direction) ? settings.direction : undefined);
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzZoom>): Promise<void> {
@@ -65,12 +56,13 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
     const direction = this.isValidDirection(settings.direction) ? settings.direction : undefined;
 
     const globals = await this.getGlobals();
-    const cameraIP = globals.cameraIP;
+    if (await noCameraGuard(ev.action, globals)) return;
 
-    await this.updateButton(ev, direction, cameraIP);
+    await this.updateButton(ev, direction);
 
-    if (!cameraIP || !direction) return;
+    if (!direction) return;
 
+    const cameraIP = globals.cameraIP as string;
     const speed = globals.zoomMode ?? "normal";
 
     if(globals.isTelycam){
