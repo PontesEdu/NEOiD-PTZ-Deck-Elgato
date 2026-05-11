@@ -1,194 +1,129 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../types";
 import { checkCameraConnection } from "../utils/checkCameraConnection";
-import { PTZ_DIRECTIONS, PTZDirection } from "../api/api-neoid";
+import { PTZ_DIRECTIONS } from "../constants";
+import type { PTZDirection } from "../constants";
 import { APINeoid } from "../api/api-neoid";
 import { resolveCamera } from "../utils/camera-api";
 
 export type PtzSettings = {
-  speed?: number;
-  tilt?: number;
   direction: string;
-  cameraIP: string;
-  camera: string;
-  cameraIPControls: string
-  isTelycam: boolean
-  isDefault: boolean
+  cameraIPControls: string;
+  isDefault: boolean;
 };
 
-
-// Ações
 @action({ UUID: "com.neoid.ptzneoid.ptz-controls" })
 export class PTZControls extends SingletonAction<PtzSettings> {
 
+  // Nota: ev.payload.settings pode conter cameraIPControls desatualizado se chamado logo após
+  // setSettings em onDidReceiveSettings. Seguro porque checkConnectivity=false não usa o campo.
+  private async updateVisual(
+    ev: WillAppearEvent<PtzSettings> | DidReceiveSettingsEvent<PtzSettings>,
+    checkConnectivity = false,
+    cachedGlobals?: GlobalSettings
+  ): Promise<void> {
+    const settings = ev.payload.settings;
+    const globals = cachedGlobals ?? await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const direction = settings.direction as PTZDirection;
+
+    if (!PTZ_DIRECTIONS.includes(direction)) {
+      await ev.action.setTitle('Select');
+      return;
+    }
+
+    ev.action.setImage(`imgs/actions/controls/${direction}.png`);
+
+    const isDefault = settings.isDefault ?? false;
+
+    if (isDefault) {
+      if (checkConnectivity) {
+        const ip = settings.cameraIPControls ?? "";
+        const connected = await checkCameraConnection(ip, 1000);
+        await ev.action.setTitle(connected ? "default" : "default\nNot Connect");
+      } else {
+        await ev.action.setTitle("default");
+      }
+    } else {
+      await ev.action.setTitle(globals.camera ?? "");
+    }
+  }
 
   override async onWillAppear(ev: WillAppearEvent<PtzSettings>) {
-    const settings = ev.payload.settings
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
-    const direction = settings.direction as PTZDirection;
-
-    // Verificando a direção
-    if (!PTZ_DIRECTIONS.includes(direction)) {
-      await ev.action.setTitle('Select')
-      return
-    }
-
-    ev.action.setImage(`imgs/actions/controls/${settings.direction}.png`)
-
-    const isDefault = settings.isDefault === undefined ? false : settings.isDefault
-
-    if(isDefault) {
-      const cameraIPControls = settings.cameraIPControls === undefined ? "" : settings.cameraIPControls ?? ""
-
-      const checkCamera = await checkCameraConnection(`${cameraIPControls}`, 1000)
-
-      if(checkCamera){
-        await ev.action.setTitle("default")
-      } else{
-        ev.action.setTitle("default\nNot Connect")
-        return
-      }
-
-    } else {
-      const titleName = globals.camera === undefined ? "" : globals.camera
-      await ev.action.setTitle(`${titleName ?? ""}`)
-    }
+    await this.updateVisual(ev, true);
   }
 
-  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent){
-    // SETTINGS
-    const settings = ev.payload.settings
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PtzSettings>) {
+    const settings = ev.payload.settings;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
-    ev.action.setImage(`imgs/actions/controls/${settings.direction}.png`)
-
-    const direction = settings.direction as PTZDirection;
-
-    if (!PTZ_DIRECTIONS.includes(direction)) {
-      await ev.action.setTitle('Select')
-      return
+    const cameraIPControls = settings.cameraIPControls ?? "";
+    if (!cameraIPControls) {
+      ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
     }
 
-    const isDefault = settings.isDefault === undefined ? false : settings.isDefault
-
-    const cameraIPControls = settings.cameraIPControls === undefined ? false : settings.cameraIPControls
-    if(!cameraIPControls || cameraIPControls === ""){
-      ev.action.setSettings({...settings, cameraIPControls: (globals.cameraIPControls as string) ?? "192.168.100.88"});
-    }
-
-    if(isDefault) {
-      await ev.action.setTitle("default")
-    } else {
-      const titleName = globals.camera === undefined ? "" : globals.camera
-      await ev.action.setTitle(`${titleName ?? ""}`)
-    }
-
+    await this.updateVisual(ev, false, globals);
   }
-
 
   override async onPropertyInspectorDidAppear(ev: PropertyInspectorDidAppearEvent) {
     // Esse método é chamado quando o user abre o inspector de propriedades/config (abre o botão)
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const settings = await ev.action.getSettings()
+    const settings = await ev.action.getSettings();
 
-    const cameraIPControls = settings.cameraIPControls === undefined ? "" : settings.cameraIPControls
-    if(!cameraIPControls){
-      ev.action.setSettings({...settings, cameraIPControls: (globals.cameraIPControls as string) ?? "192.168.100.88"});
+    const cameraIPControls = settings.cameraIPControls ?? "";
+    if (!cameraIPControls) {
+      ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
     }
-    
   }
 
-
-
-  //Retirei essa função por que não quero que toda hora que o user fecha a ação pelo software ele salve o ip como global
-  // override async onPropertyInspectorDidDisappear(ev: PropertyInspectorDidDisappearEvent) {
-  //   // Esse método é chamado quando o user abre o inspector de propriedades/config (abre o botão)
-  //   const globals = await streamDeck.settings.getGlobalSettings();
-  //   const settings = await ev.action.getSettings();
-
-  //   const cameraIPControls = settings.cameraIPControls === undefined ? false : settings.cameraIPControls
-
-  //   await streamDeck.settings.setGlobalSettings({
-  //     ...globals,
-  //     cameraIPControls: cameraIPControls,
-  //   })
-  // }
-
-
-
   override async onKeyDown(ev: KeyDownEvent<PtzSettings>): Promise<void> {
-    const settings = ev.payload.settings
+    const settings = ev.payload.settings;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
     const direction = settings.direction as PTZDirection;
 
     if (!PTZ_DIRECTIONS.includes(direction)) {
-      await ev.action.setTitle('Select')
-      return
+      await ev.action.setTitle('Select');
+      return;
     }
 
     const speed = globals.panMode ?? "normal";
+    const isDefault = settings.isDefault ?? false;
 
-    const isDefault = settings.isDefault === undefined ? false : settings.isDefault
-    if(isDefault) {
-      const cameraIPControls = settings.cameraIPControls === undefined ? false : settings.cameraIPControls
+    if (isDefault) {
+      const cameraIPControls = settings.cameraIPControls ?? "";
+      const checkCamera = await checkCameraConnection(cameraIPControls, 1000);
 
-      const checkCamera = await checkCameraConnection(`${cameraIPControls}`, 1000)
+      if (checkCamera) {
+        const api = new APINeoid({ IP: cameraIPControls });
+        await api.Move(direction, speed);
 
-      if(checkCamera) {
-        const api = new APINeoid({IP: cameraIPControls as string});
-        await api.Move(direction, speed)
+        // sincroniza cameraIPControls nos globals para que botões "camera select" adicionados
+        // depois já apareçam com o IP correto
+        await streamDeck.settings.setGlobalSettings({ ...globals, cameraIPControls });
 
-        // para quando adicionar um camera select novo ele ja mostar com o cameraIP Default
-        await streamDeck.settings.setGlobalSettings({
-          ...globals,
-          cameraIPControls: cameraIPControls,
-        });
-
-        await ev.action.setTitle("default")
-
-        // Eu não Não salvei por que ele deixa os moviemntos de todos os defaults iguais
-          //  this.actions.forEach(async (action) => {
-          //     const settingsAction = await action.getSettings()
-          //     action.setSettings({...settingsAction, cameraIPControls: globals.cameraIPControls});
-          //  })
-        return; // Final
+        await ev.action.setTitle("default");
+        return;
       } else {
-        ev.action.setTitle("default\nNot Connect")
-
-        return
+        ev.action.setTitle("default\nNot Connect");
+        return;
       }
-
     } else {
-      const cameraIP = globals.cameraIP
-      if (!cameraIP) return;
-
-      const titleName = globals.camera === undefined ? "" : globals.camera
-      await ev.action.setTitle(titleName ?? "")
-
       const ctx = resolveCamera(globals);
       if (!ctx) return;
+      await ev.action.setTitle(globals.camera ?? "");
       await ctx.api.move(direction, speed);
     }
   }
 
-
-  override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-    // configuraçoes globais que estao vindo de outro
+  override async onKeyUp(ev: KeyUpEvent<PtzSettings>): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const settings = ev.payload.settings
+    const settings = ev.payload.settings;
+    const isDefault = settings.isDefault ?? false;
 
-    const isDefault = settings.isDefault === undefined ? false : settings.isDefault
-
-    if(isDefault) {
-      const cameraIPControls = settings.cameraIPControls === undefined ? false : settings.cameraIPControls
-      const api = new APINeoid({IP: cameraIPControls as string});
-      api.StopMove()
+    if (isDefault) {
+      const cameraIPControls = settings.cameraIPControls ?? "";
+      const api = new APINeoid({ IP: cameraIPControls });
+      api.StopMove();
     } else {
-      const cameraIP = globals.cameraIP
-      if (!cameraIP) return;
-
       const ctx = resolveCamera(globals);
       if (!ctx) return;
       ctx.api.stopMove();
