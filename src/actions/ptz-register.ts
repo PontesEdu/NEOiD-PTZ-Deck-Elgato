@@ -1,4 +1,4 @@
-import streamDeck, { action, KeyDownEvent, PropertyInspectorDidAppearEvent, PropertyInspectorDidDisappearEvent, SendToPluginEvent, SingletonAction, Target, TitleParametersDidChangeEvent, WillAppearEvent, type DidReceiveSettingsEvent } from "@elgato/streamdeck";
+import streamDeck, { action, KeyDownEvent, PropertyInspectorDidDisappearEvent, SingletonAction, WillAppearEvent, type DidReceiveSettingsEvent } from "@elgato/streamdeck";
 import { PTZControls } from "./ptz-controls";
 import { PTZTracking } from './ptz-tracking';
 import { PTZPreset } from "./preset";
@@ -15,8 +15,17 @@ import { ZoomDial } from './dials/zoom-dials';
 
 
 
+type PtzRegisterSettings = {
+  cameraIP?: string | boolean;
+  camera?: string;
+  isTelycam?: boolean;
+  telycamUser?: string;
+  telycamPassword?: string;
+  isDefault?: boolean;
+};
+
 @action({ UUID: "com.neoid.ptzneoid.ptz-register" })
-export class PTZRegister extends SingletonAction<any> {
+export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
   private timeCheck: number = 500
   ptzControls: PTZControls
   ptzTracking: PTZTracking
