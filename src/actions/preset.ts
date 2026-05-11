@@ -1,9 +1,9 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../types";
 import { imageSnapShot } from "../utils/snapshot";
-import { APITelycam } from "../api/api-telycam";
-import { APINeoid } from "../api/api-neoid";
 import { noCameraGuard } from "../utils/no-camera-guard";
+import { resolveCamera } from "../utils/camera-api";
+import { globalKeys } from "../utils/global-keys";
 
 type PtzPresetProps = {
   numberPreset: number | "undefined";
@@ -29,7 +29,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         await ev.action.setTitle(`${presetNumber}`);
       } else {
         if(settings.image){
-          const image = globals[`presetImage${presetNumber}${cameraIP}`]
+          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
           await ev.action.setImage(`${image}`);
         } else {
           await ev.action.setImage("");
@@ -74,22 +74,18 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
     // Se não foi um clique longo, chama o preset
     if (!this.longPress) {
+      const ctx = resolveCamera(globals);
+      if (!ctx) return;
+      ctx.api.callPreset(presetNumber);
 
-      if(globals.isTelycam){
-        const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-        api.CallPreset(presetNumber)
-      } else {
-        const api = new APINeoid({IP: cameraIP});
-        api.CallPreset(presetNumber)
-        
-        if(settings.image){
-          const image = globals[`presetImage${presetNumber}${cameraIP}`]
+      if (!globals.isTelycam) {
+        if (settings.image) {
+          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)];
           await ev.action.setImage(`${image}`);
         } else {
           await ev.action.setImage("");
         }
       }
-
 
       await ev.action.setTitle(`${presetNumber}`);
     }
@@ -99,13 +95,9 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     // salva preset na câmera
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
-    if(globals.isTelycam){
-      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-      api.AddSetPreset(presetNumber)
-    } else {
-      const api = new APINeoid({IP: cameraIP});
-      api.AddSetPreset(presetNumber)
-    }
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
+    ctx.api.addSetPreset(presetNumber);
 
     await ev.action.setTitle(`set`);
     await ev.action.setImage(`imgs/actions/set/saved.png`);
@@ -124,7 +116,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
         await streamDeck.settings.setGlobalSettings({
           ...globals,
-          [`presetImage${presetNumber}${cameraIP}`]: snapshot
+          [globalKeys.presetImage(presetNumber, cameraIP)]: snapshot
         });
 
         await ev.action.setImage(snapshot);
@@ -144,7 +136,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
     if (!isNaN(presetNumber)) {
       if(settings.image){
-        const image = globals[`presetImage${presetNumber}${cameraIP}`]
+        const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
         await ev.action.setImage(`${image}`);
       } else {
         await ev.action.setImage("");

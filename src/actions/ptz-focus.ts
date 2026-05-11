@@ -1,8 +1,7 @@
 import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent } from "@elgato/streamdeck";
-import { APITelycam } from "../api/api-telycam";
-import { APINeoid } from "../api/api-neoid";
 import type { GlobalSettings } from "../types";
 import { noCameraGuard } from "../utils/no-camera-guard";
+import { resolveCamera } from "../utils/camera-api";
 
 export type PtzFocus = {
   speed?: number;
@@ -54,51 +53,34 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
 
     if (await noCameraGuard(ev.action, globals)) return;
-    const cameraIP = globals.cameraIP as string;
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
 
     const direction = settings.mode as "focusout" | "focusin" | "afocus";
 
-    if (!["focusout", "focusin", "afocus" ].includes(direction)) {
+    if (!["focusout", "focusin", "afocus"].includes(direction)) {
       await ev.action.setTitle("Select");
       return;
     }
 
-    if(direction === "focusin"){
+    if (direction === "focusin") {
       ev.action.setTitle(`Focus in`)
       ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-
-    } else if(direction === "focusout"){
+    } else if (direction === "focusout") {
       ev.action.setTitle(`Focus out`)
       ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-
-    } else if(direction === "afocus") {
+    } else if (direction === "afocus") {
       ev.action.setTitle(`auto`)
       ev.action.setImage(`imgs/actions/focus/auto.png`)
     }
 
-    const speed = globals.focusMode ?? "normal";
-
-    if (globals.isTelycam) {
-      const api = new APITelycam({IP: cameraIP, key: globals.keyTelycam});
-      api.MoveFocusTelycam(direction, speed)
-    } else {
-      const api = new APINeoid({IP: cameraIP});
-      api.MoveZoomAndFocus(direction, speed)
-    }
-
+    ctx.api.moveFocus(direction, globals.focusMode ?? "normal");
   }
 
   override async onKeyUp(_ev: KeyUpEvent<PtzFocus>): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP
-
-    if(globals.isTelycam){
-      const api = new APITelycam({IP: cameraIP as string, key: globals.keyTelycam});
-      api.StopFocusTelycam()
-    } else {
-      const api = new APINeoid({IP: cameraIP as string});
-      api.StopZoomAndFocus("focus")
-    }
-
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
+    ctx.api.stopFocus();
   }
 }
