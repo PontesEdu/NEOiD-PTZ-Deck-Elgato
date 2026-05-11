@@ -306,14 +306,8 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
     }
     
     
-    this.ptzControls.actions.forEach( async (actionInstance) => {
-      actionInstance.getSettings()
-
-      if(settings.isDefault){
-        actionInstance.setTitle("default");
-      } else {
-        actionInstance.setTitle(`${titleName}`);
-      }
+    this.ptzControls.actions.forEach((actionInstance) => {
+      actionInstance.setTitle(settings.isDefault ? "default" : `${titleName}`);
     });
 
 
