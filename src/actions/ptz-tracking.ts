@@ -17,6 +17,15 @@ const trackingModesTelycam = [
   { value: "2", name: "Body\nFraming" },
 ];
 
+function resolveModeInfo(globals: GlobalSettings, cameraIP: string, isTelycam: boolean) {
+  if (isTelycam) {
+    const lastMode = String(globals[globalKeys.trackingModeTelycam(cameraIP)] || trackingModesTelycam[0].value);
+    return trackingModesTelycam.find(m => m.value === lastMode) || trackingModesTelycam[0];
+  }
+  const lastMode = String(globals[globalKeys.trackingMode(cameraIP)] || trackingModes[0].value);
+  return trackingModes.find(m => m.value === lastMode) || trackingModes[0];
+}
+
 @action({ UUID: "com.neoid.ptzneoid.ptz-tracking" })
 export class PTZTracking extends SingletonAction {
   private pressTimer: ReturnType<typeof setTimeout> | null = null;
@@ -32,15 +41,7 @@ export class PTZTracking extends SingletonAction {
     const cameraIP = globals.cameraIP as string;
     const isTelycam = globals.isTelycam;
     const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
-
-    let modeInfo;
-    if (isTelycam) {
-      const lastMode = String(globals[globalKeys.trackingModeTelycam(cameraIP)] || trackingModesTelycam[0].value);
-      modeInfo = trackingModesTelycam.find(m => m.value === lastMode) || trackingModesTelycam[0];
-    } else {
-      const lastMode = String(globals[globalKeys.trackingMode(cameraIP)] || trackingModes[0].value);
-      modeInfo = trackingModes.find(m => m.value === lastMode) || trackingModes[0];
-    }
+    const modeInfo = resolveModeInfo(globals, cameraIP, isTelycam);
 
     ev.action.setTitle(modeInfo.name);
     ev.action.setImage(trackingActive ? "imgs/actions/tracking/tracking-on" : "imgs/actions/tracking/tracking-off");
@@ -81,40 +82,46 @@ export class PTZTracking extends SingletonAction {
     if (await noCameraGuard(ev.action, globals)) return;
     const cameraIP = globals.cameraIP as string;
     const isTelycam = globals.isTelycam;
+    const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
+
+    if (trackingActive) {
+      const modeInfo = resolveModeInfo(globals, cameraIP, isTelycam);
+      ev.action.setTitle(modeInfo.name);
+      ev.action.setImage("imgs/actions/tracking/tracking-off");
+      await streamDeck.settings.setGlobalSettings({
+        ...globals,
+        [globalKeys.trackingActive(cameraIP)]: false,
+      });
+      if (isTelycam) {
+        const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
+        await api.SetTrackingActive(false);
+      } else {
+        const apiNEOiD = new APINeoid({ IP: cameraIP });
+        await apiNEOiD.SendTrackingActive(cameraIP, false);
+      }
+      return;
+    }
 
     if (isTelycam) {
       const lastMode = String(globals[globalKeys.trackingModeTelycam(cameraIP)] || trackingModesTelycam[0].value);
-      const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
       const currentIndex = trackingModesTelycam.findIndex(m => m.value === lastMode);
       const nextMode = trackingModesTelycam[(currentIndex + 1) % trackingModesTelycam.length];
-
       ev.action.setTitle(nextMode.name);
       ev.action.setImage("imgs/actions/tracking/tracking-off");
-
       const api = new APITelycam({ IP: cameraIP, key: globals.keyTelycam });
-      if (trackingActive) {
-        await api.SetTrackingActive(false);
-      }
       await streamDeck.settings.setGlobalSettings({
         ...globals,
         [globalKeys.trackingModeTelycam(cameraIP)]: nextMode.value,
         [globalKeys.trackingActive(cameraIP)]: false,
       });
       await api.TrackingMode(nextMode.value);
-
     } else {
       const lastMode = String(globals[globalKeys.trackingMode(cameraIP)] || trackingModes[0].value);
-      const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
       const currentIndex = trackingModes.findIndex(m => m.value === lastMode);
       const nextMode = trackingModes[(currentIndex + 1) % trackingModes.length];
-
       ev.action.setTitle(nextMode.name);
       ev.action.setImage("imgs/actions/tracking/tracking-off");
-
       const apiNEOiD = new APINeoid({ IP: cameraIP });
-      if (trackingActive) {
-        await apiNEOiD.SendTrackingActive(cameraIP, false);
-      }
       await streamDeck.settings.setGlobalSettings({
         ...globals,
         [globalKeys.trackingMode(cameraIP)]: nextMode.value,
@@ -132,15 +139,7 @@ export class PTZTracking extends SingletonAction {
     const isTelycam = globals.isTelycam;
     const trackingActive = Boolean(globals[globalKeys.trackingActive(cameraIP)]);
     const newActive = !trackingActive;
-
-    let modeInfo;
-    if (isTelycam) {
-      const lastMode = String(globals[globalKeys.trackingModeTelycam(cameraIP)] || trackingModesTelycam[0].value);
-      modeInfo = trackingModesTelycam.find(m => m.value === lastMode) || trackingModesTelycam[0];
-    } else {
-      const lastMode = String(globals[globalKeys.trackingMode(cameraIP)] || trackingModes[0].value);
-      modeInfo = trackingModes.find(m => m.value === lastMode) || trackingModes[0];
-    }
+    const modeInfo = resolveModeInfo(globals, cameraIP, isTelycam);
 
     await streamDeck.settings.setGlobalSettings({
       ...globals,
