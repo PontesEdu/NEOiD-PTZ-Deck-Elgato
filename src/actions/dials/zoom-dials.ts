@@ -1,4 +1,4 @@
-import streamDeck, { action, DialDownEvent, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DialRotateEvent, DidReceiveSettingsEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../../types";
 import { noCameraGuard } from "../../utils/no-camera-guard";
 import { resolveCamera } from "../../utils/camera-api";
@@ -41,10 +41,6 @@ export class ZoomDial extends SingletonAction {
       ev.action.setTitle(`Zoom`);
       this.stopzoomTimer = null;
     }, 200); // 200 ms sem girar = parar
-  }
-
-  override async onDialDown(_ev: DialDownEvent): Promise<void> {
-
   }
 
   private async updateButton(ev: WillAppearEvent | DidReceiveSettingsEvent): Promise<void> {
