@@ -4,38 +4,41 @@ import { noCameraGuard } from "../utils/no-camera-guard";
 import { resolveCamera } from "../utils/camera-api";
 
 export type PtzFocus = {
-  speed?: number;
-  mode: "focusout" | "focusin" | "afocus";
-  cameraIP: string;
-  camera: string;
+  mode: "focusin" | "focusout" | "afocus";
 };
 
+type FocusMode = PtzFocus["mode"];
 
-// Ações
+const focusModes = ["focusin", "focusout", "afocus"] as const satisfies readonly FocusMode[];
+
+function isFocusMode(s: string): s is FocusMode {
+  return (focusModes as readonly string[]).includes(s);
+}
+
 @action({ UUID: "com.neoid.ptzneoid.ptz-focus" })
 export class PTZFocus extends SingletonAction<PtzFocus> {
 
-  private async updateVisual(ev: WillAppearEvent<PtzFocus> | DidReceiveSettingsEvent<PtzFocus>): Promise<void> {
-    const settings = ev.payload.settings;
+  private async updateVisual(
+    ev: WillAppearEvent<PtzFocus> | DidReceiveSettingsEvent<PtzFocus> | KeyDownEvent<PtzFocus>
+  ): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
     if (await noCameraGuard(ev.action, globals)) return;
 
-    const direction = settings.mode as string;
-    if (!["focusout", "focusin", "afocus"].includes(direction)) {
+    const { mode } = ev.payload.settings;
+    if (!isFocusMode(mode)) {
       await ev.action.setTitle("Select");
       return;
     }
 
-    if (settings.mode === "focusin") {
-      ev.action.setTitle(`Focus in`);
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`);
-    } else if (settings.mode === "focusout") {
-      ev.action.setTitle(`Focus out`);
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`);
-    } else if (settings.mode === "afocus") {
-      ev.action.setTitle(`auto`);
-      ev.action.setImage(`imgs/actions/focus/auto.png`);
+    if (mode === "focusin") {
+      ev.action.setTitle("Focus in");
+      ev.action.setImage("imgs/actions/focus/focusin.png");
+    } else if (mode === "focusout") {
+      ev.action.setTitle("Focus out");
+      ev.action.setImage("imgs/actions/focus/focusout.png");
+    } else {
+      ev.action.setTitle("auto");
+      ev.action.setImage("imgs/actions/focus/auto.png");
     }
   }
 
@@ -48,33 +51,20 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzFocus>): Promise<void> {
-    const settings = ev.payload.settings
+    const { mode } = ev.payload.settings;
 
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
-    if (await noCameraGuard(ev.action, globals)) return;
-    const ctx = resolveCamera(globals);
-    if (!ctx) return;
-
-    const direction = settings.mode as "focusout" | "focusin" | "afocus";
-
-    if (!["focusout", "focusin", "afocus"].includes(direction)) {
+    if (!isFocusMode(mode)) {
       await ev.action.setTitle("Select");
       return;
     }
 
-    if (direction === "focusin") {
-      ev.action.setTitle(`Focus in`)
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-    } else if (direction === "focusout") {
-      ev.action.setTitle(`Focus out`)
-      ev.action.setImage(`imgs/actions/focus/${settings.mode}.png`)
-    } else if (direction === "afocus") {
-      ev.action.setTitle(`auto`)
-      ev.action.setImage(`imgs/actions/focus/auto.png`)
-    }
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    if (await noCameraGuard(ev.action, globals)) return;
+    const ctx = resolveCamera(globals);
+    if (!ctx) return;
 
-    ctx.api.moveFocus(direction, globals.focusMode ?? "normal");
+    await this.updateVisual(ev);
+    ctx.api.moveFocus(mode, globals.focusMode ?? "normal");
   }
 
   override async onKeyUp(_ev: KeyUpEvent<PtzFocus>): Promise<void> {
