@@ -1,28 +1,36 @@
 import streamDeck, { action, KeyDownEvent, SingletonAction, WillAppearEvent, type DidReceiveSettingsEvent } from "@elgato/streamdeck";
-import type { GlobalSettings } from "../types";
-
+import type { GlobalSettings, SpeedType } from "../types";
 
 export type PTZSpeedProps = {
   speed: "pan" | "zoom" | "focus";
 };
 
+type SpeedChannel = PTZSpeedProps["speed"];
+
+const speedChannels = ["pan", "zoom", "focus"] as const satisfies readonly SpeedChannel[];
+const speedModes = ["slowest", "slow", "normal", "fast", "fastest"] as const satisfies readonly SpeedType[];
+
+function isSpeedChannel(s: string): s is SpeedChannel {
+  return (speedChannels as readonly string[]).includes(s);
+}
+
 @action({ UUID: "com.neoid.ptzneoid.ptz-speed" })
 export class PTZSpeed extends SingletonAction<PTZSpeedProps> {
-  private static readonly speedModes = ["slowest", "slow", "normal", "fast", "fastest"] as const;
 
-  private async updateVisual(ev: WillAppearEvent<PTZSpeedProps> | DidReceiveSettingsEvent<PTZSpeedProps>): Promise<void> {
-    const settings = ev.payload.settings;
-    const tipo = settings.speed as "pan" | "zoom" | "focus";
+  private async updateVisual(
+    ev: WillAppearEvent<PTZSpeedProps> | DidReceiveSettingsEvent<PTZSpeedProps> | KeyDownEvent<PTZSpeedProps>
+  ): Promise<void> {
+    const { speed } = ev.payload.settings;
 
-    if (!["pan", "zoom", "focus"].includes(tipo)) {
+    if (!isSpeedChannel(speed)) {
       await ev.action.setTitle("Select");
       return;
     }
 
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const modeKey = `${tipo}Mode` as "panMode" | "zoomMode" | "focusMode";
+    const modeKey = `${speed}Mode` as "panMode" | "zoomMode" | "focusMode";
     const currentMode = globals[modeKey] ?? "normal";
-    await ev.action.setTitle(`${tipo === "pan" ? "P/T" : tipo}:\n${currentMode}`);
+    await ev.action.setTitle(`${speed === "pan" ? "P/T" : speed}:\n${currentMode}`);
   }
 
   override async onWillAppear(ev: WillAppearEvent<PTZSpeedProps>) {
@@ -33,35 +41,22 @@ export class PTZSpeed extends SingletonAction<PTZSpeedProps> {
     await this.updateVisual(ev);
   }
 
-
-  // KEYDOWN
   override async onKeyDown(ev: KeyDownEvent<PTZSpeedProps>): Promise<void> {
-    const settings = ev.payload.settings;
-    const tipo = settings.speed as "pan" | "zoom" | "focus";
+    const { speed } = ev.payload.settings;
 
-    if (!["pan", "zoom", "focus"].includes(tipo)) {
+    if (!isSpeedChannel(speed)) {
       await ev.action.setTitle("Select");
       return;
     }
 
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
-    const modeKey = `${tipo}Mode` as "panMode" | "zoomMode" | "focusMode";
+    const modeKey = `${speed}Mode` as "panMode" | "zoomMode" | "focusMode";
     const currentMode = globals[modeKey] ?? "normal";
-    const indexAtual = PTZSpeed.speedModes.indexOf(currentMode as typeof PTZSpeed.speedModes[number]);
-    const nextIndex = (indexAtual + 1) % PTZSpeed.speedModes.length;
-    const nextMode = PTZSpeed.speedModes[nextIndex];
+    const nextIndex = (speedModes.indexOf(currentMode) + 1) % speedModes.length;
+    const nextMode = speedModes[nextIndex];
 
-
-    // atualiza o título
-    await ev.action.setTitle(`${tipo === "pan" ? "P/T" : tipo}:\n${nextMode}`);
-
-    // salva no global
-    await streamDeck.settings.setGlobalSettings({
-      ...globals,
-      [`${tipo}Mode`]: nextMode,
-    });
+    await streamDeck.settings.setGlobalSettings({ ...globals, [`${speed}Mode`]: nextMode });
+    await this.updateVisual(ev);
   }
 }
 
-  
