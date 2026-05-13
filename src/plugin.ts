@@ -4,7 +4,7 @@ import { ActionRegistry } from "./utils/action-registry";
 import { PTZControls } from "./actions/ptz-controls";
 import { PTZZoom } from "./actions/ptz-zoom";
 import { PTZFocus } from "./actions/ptz-focus";
-import { PTZTracking } from "./actions/ptz-tracking";
+import { PTZTracking, invalidateTrackingFetchCache } from "./actions/ptz-tracking";
 import { PTZRegister } from "./actions/ptz-register";
 import { PTZSpeed } from "./actions/speed";
 import { PTZPreset } from "./actions/preset";
@@ -47,5 +47,8 @@ ActionRegistry.register(focusDial);
 ActionRegistry.register(zoomDial);
 
 streamDeck.actions.registerAction(new PTZRegister(ptzTracking));
+
+streamDeck.system.onSystemDidWakeUp(() => invalidateTrackingFetchCache());
+streamDeck.devices.onDeviceDidConnect(() => invalidateTrackingFetchCache());
 
 streamDeck.connect();
