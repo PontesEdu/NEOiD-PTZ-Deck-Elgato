@@ -26,6 +26,22 @@ function resolveModeInfo(globals: GlobalSettings, cameraIP: string, isTelycam: b
   return trackingModes.find(m => m.value === lastMode) || trackingModes[0];
 }
 
+const lastFetchTime: Record<string, number> = {};
+const APPEAR_FETCH_COOLDOWN_MS = 2000;
+
+function shouldFetch(cameraIP: string): boolean {
+  const now = Date.now();
+  if (now - (lastFetchTime[cameraIP] || 0) > APPEAR_FETCH_COOLDOWN_MS) {
+    lastFetchTime[cameraIP] = now;
+    return true;
+  }
+  return false;
+}
+
+export function invalidateTrackingFetchCache(): void {
+  for (const key in lastFetchTime) delete lastFetchTime[key];
+}
+
 @action({ UUID: "com.neoid.ptzneoid.ptz-tracking" })
 export class PTZTracking extends SingletonAction {
   private pressTimer: ReturnType<typeof setTimeout> | null = null;
@@ -49,6 +65,15 @@ export class PTZTracking extends SingletonAction {
 
   override async onWillAppear(ev: WillAppearEvent) {
     await this.updateVisual(ev);
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    if (!globals.cameraIP || globals.isTelycam) return;
+    if (!shouldFetch(globals.cameraIP as string)) return;
+    try {
+      const parsed = await this.fetchCameraTracking(globals.cameraIP as string);
+      if (parsed) this.actions.forEach(a => a.getSettings());
+    } catch {
+      // câmera inacessível — mantém globals atuais, sem ação
+    }
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
@@ -99,6 +124,7 @@ export class PTZTracking extends SingletonAction {
         const apiNEOiD = new APINeoid({ IP: cameraIP });
         await apiNEOiD.SendTrackingActive(cameraIP, false);
       }
+      this.actions.forEach(a => a.getSettings());
       return;
     }
 
@@ -129,6 +155,7 @@ export class PTZTracking extends SingletonAction {
       });
       await apiNEOiD.SendTrackingMode(nextMode.value);
     }
+    this.actions.forEach(a => a.getSettings());
   }
 
   private async toggleTracking(ev: KeyDownEvent) {
@@ -156,6 +183,7 @@ export class PTZTracking extends SingletonAction {
       const apiNEOiD = new APINeoid({ IP: cameraIP });
       await apiNEOiD.SendTrackingActive(cameraIP, newActive);
     }
+    this.actions.forEach(a => a.getSettings());
   }
 
   override onWillDisappear(_ev: WillDisappearEvent): void {
