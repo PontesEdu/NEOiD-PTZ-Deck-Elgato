@@ -1,87 +1,146 @@
-import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../types";
 import { imageSnapShot } from "../utils/snapshot";
 import { noCameraGuard } from "../utils/no-camera-guard";
 import { resolveCamera } from "../utils/camera-api";
 import { globalKeys } from "../utils/global-keys";
+import { APINeoid } from "../api/api-neoid";
 
 type PtzPresetProps = {
   numberPreset: number | "undefined";
-  image: boolean
+  image: boolean;
+  isDefault: boolean;
+  cameraIPControls: string;
 };
+
+function resolvePresetNumber(settings: PtzPresetProps): number {
+  return settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
+}
 
 @action({ UUID: "com.neoid.ptzneoid.ptz-preset" })
 export class PTZPreset extends SingletonAction<PtzPresetProps> {
-  private pressTimer?: ReturnType<typeof setTimeout>;
+  private pressTimer: ReturnType<typeof setTimeout> | null = null;
   private longPress = false;
 
-  override async onWillAppear(ev: WillAppearEvent<PtzPresetProps>) {
-    const settings = ev.payload.settings;
-    const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
+  private async updateVisual(ev: WillAppearEvent<PtzPresetProps> | DidReceiveSettingsEvent): Promise<void> {
+    const settings = ev.payload.settings as PtzPresetProps;
+    const presetNumber = resolvePresetNumber(settings);
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const isDefault = settings.isDefault ?? false;
 
-    if (await noCameraGuard(ev.action, globals)) return;
-    const cameraIP = globals.cameraIP as string;
+    let cameraIP: string;
+
+    if (isDefault) {
+      cameraIP = settings.cameraIPControls || "";
+      if (!cameraIP) {
+        await ev.action.setImage("imgs/actions/preset/preset.png");
+        await ev.action.setTitle("Select");
+        return;
+      }
+    } else {
+      if (await noCameraGuard(ev.action, globals)) return;
+      cameraIP = globals.cameraIP as string;
+    }
 
     if (!isNaN(presetNumber)) {
-      if(globals.isTelycam){
+      const isTelycam = isDefault ? false : globals.isTelycam;
+      if (isTelycam) {
         await ev.action.setImage("");
         await ev.action.setTitle(`${presetNumber}`);
       } else {
-        if(settings.image){
-          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
-          await ev.action.setImage(`${image}`);
+        if (settings.image) {
+          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)];
+          await ev.action.setImage(image ? String(image) : "");
         } else {
           await ev.action.setImage("");
         }
         await ev.action.setTitle(`${presetNumber}`);
       }
-
     } else {
       await ev.action.setImage("imgs/actions/preset/preset.png");
       await ev.action.setTitle("Select");
     }
   }
 
+  override async onWillAppear(ev: WillAppearEvent<PtzPresetProps>) {
+    await this.updateVisual(ev);
+  }
+
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
+    const settings = ev.payload.settings as PtzPresetProps;
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+
+    if ((settings.isDefault ?? false) && !settings.cameraIPControls) {
+      ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
+    }
+
+    await this.updateVisual(ev);
+  }
+
+  override async onPropertyInspectorDidAppear(ev: PropertyInspectorDidAppearEvent) {
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const settings = await ev.action.getSettings<PtzPresetProps>();
+
+    if ((settings.isDefault ?? false) && !settings.cameraIPControls) {
+      ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
+    }
+  }
+
   override async onKeyDown(ev: KeyDownEvent<PtzPresetProps>) {
     const settings = ev.payload.settings;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
-    const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
+    const presetNumber = resolvePresetNumber(settings);
+    const isDefault = settings.isDefault ?? false;
+
+    const cameraIP = isDefault
+      ? settings.cameraIPControls || ""
+      : (globals.cameraIP || "");
 
     if (!cameraIP || isNaN(presetNumber)) {
-      await ev.action.setTitle(`${globals.camera}`)
-      return
+      await ev.action.setTitle(isDefault ? "No IP" : `${globals.camera}`);
+      return;
     }
 
-    // Começa a contar o tempo do pressionamento
     this.longPress = false;
+    if (this.pressTimer) clearTimeout(this.pressTimer);
     this.pressTimer = setTimeout(() => {
       this.longPress = true;
-      this.savePreset(ev, cameraIP, presetNumber); // salva após 1s
+      this.savePreset(ev, cameraIP as string, presetNumber);
     }, 1100);
   }
 
   override async onKeyUp(ev: KeyUpEvent<PtzPresetProps>) {
-    clearTimeout(this.pressTimer);
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = null;
+    }
 
     const settings = ev.payload.settings;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-    const cameraIP = globals.cameraIP;
-    const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
+    const presetNumber = resolvePresetNumber(settings);
+    const isDefault = settings.isDefault ?? false;
+
+    const cameraIP = isDefault
+      ? settings.cameraIPControls || ""
+      : (globals.cameraIP || "");
 
     if (!cameraIP || isNaN(presetNumber)) return;
 
-    // Se não foi um clique longo, chama o preset
     if (!this.longPress) {
-      const ctx = resolveCamera(globals);
-      if (!ctx) return;
-      ctx.api.callPreset(presetNumber);
+      if (isDefault) {
+        const api = new APINeoid({ IP: cameraIP as string });
+        api.CallPreset(presetNumber);
+      } else {
+        const ctx = resolveCamera(globals);
+        if (!ctx) return;
+        ctx.api.callPreset(presetNumber);
+      }
 
-      if (!globals.isTelycam) {
+      const isTelycam = isDefault ? false : globals.isTelycam;
+      if (!isTelycam) {
         if (settings.image) {
-          const image = globals[globalKeys.presetImage(presetNumber, cameraIP)];
-          await ev.action.setImage(`${image}`);
+          const image = globals[globalKeys.presetImage(presetNumber, cameraIP as string)];
+          await ev.action.setImage(image ? String(image) : "");
         } else {
           await ev.action.setImage("");
         }
@@ -92,69 +151,55 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
   }
 
   private async savePreset(ev: KeyDownEvent<PtzPresetProps>, cameraIP: string, presetNumber: number) {
-    // salva preset na câmera
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    const settings = ev.payload.settings;
+    const isDefault = settings.isDefault ?? false;
 
-    const ctx = resolveCamera(globals);
-    if (!ctx) return;
-    ctx.api.addSetPreset(presetNumber);
+    if (isDefault) {
+      const api = new APINeoid({ IP: cameraIP });
+      api.AddSetPreset(presetNumber);
+    } else {
+      const ctx = resolveCamera(globals);
+      if (!ctx) return;
+      ctx.api.addSetPreset(presetNumber);
+    }
 
     await ev.action.setTitle(`set`);
     await ev.action.setImage(`imgs/actions/set/saved.png`);
-    const settings = ev.payload.settings;
 
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    if(globals.isTelycam){
+    const isTelycam = isDefault ? false : globals.isTelycam;
+
+    if (isTelycam) {
       await ev.action.setImage("");
       await ev.action.setTitle(`${presetNumber}`);
     } else {
-      const snapshot = await imageSnapShot(cameraIP);
-      await ev.action.setTitle(`${presetNumber}`);
-
-      if(settings.image){
-
-        await streamDeck.settings.setGlobalSettings({
-          ...globals,
-          [globalKeys.presetImage(presetNumber, cameraIP)]: snapshot
-        });
-
-        await ev.action.setImage(snapshot);
-      } else {
+      try {
+        const snapshot = await imageSnapShot(cameraIP);
+        await ev.action.setTitle(`${presetNumber}`);
+        if (settings.image) {
+          const freshGlobals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+          await streamDeck.settings.setGlobalSettings({
+            ...freshGlobals,
+            [globalKeys.presetImage(presetNumber, cameraIP)]: snapshot
+          });
+          await ev.action.setImage(snapshot);
+        } else {
+          await ev.action.setImage("");
+        }
+      } catch {
+        // câmera inacessível — preset salvo na câmera, snapshot não capturado
+        await ev.action.setTitle(`${presetNumber}`);
         await ev.action.setImage("");
       }
-    }
-  }
-
-  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
-    const settings = ev.payload.settings;
-    const presetNumber = settings.numberPreset === undefined ? 1 : Number(settings.numberPreset);
-    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
-
-    if (await noCameraGuard(ev.action, globals)) return;
-    const cameraIP = globals.cameraIP as string;
-
-    if (!isNaN(presetNumber)) {
-      if(settings.image){
-        const image = globals[globalKeys.presetImage(presetNumber, cameraIP)]
-        await ev.action.setImage(`${image}`);
-      } else {
-        await ev.action.setImage("");
-      }
-
-      await ev.action.setTitle(`${presetNumber}`);
-    } else {
-      await ev.action.setImage("imgs/actions/preset/preset.png");
-      await ev.action.setTitle("Select");
     }
   }
 
   override onWillDisappear(_ev: WillDisappearEvent): void {
     if (this.pressTimer) {
       clearTimeout(this.pressTimer);
-      this.pressTimer = undefined;
+      this.pressTimer = null;
     }
   }
 }
-
-
