@@ -39,9 +39,9 @@ export class PTZControls extends SingletonAction<PtzSettings> {
       if (checkConnectivity) {
         const ip = settings.cameraIPControls ?? "";
         const connected = await checkCameraConnection(ip, 1000);
-        await ev.action.setTitle(connected ? "default" : "default\nNot Connect");
+        await ev.action.setTitle(connected ? "" : "Not connect");
       } else {
-        await ev.action.setTitle("default");
+        await ev.action.setTitle("");
       }
     } else {
       await ev.action.setTitle(globals.camera ?? "");
@@ -100,10 +100,10 @@ export class PTZControls extends SingletonAction<PtzSettings> {
         // depois já apareçam com o IP correto
         await streamDeck.settings.setGlobalSettings({ ...globals, cameraIPControls });
 
-        await ev.action.setTitle("default");
+        await ev.action.setTitle("");
         return;
       } else {
-        ev.action.setTitle("default\nNot Connect");
+        ev.action.setTitle("Not connect");
         return;
       }
     } else {
