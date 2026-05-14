@@ -1,0 +1,30 @@
+{
+  "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>Not connected</strong> is shown. Always select the target camera here before using other actions.",
+  "select.telycam.description": "When <strong>NEOiD By Telycam</strong> is enabled, enter User and Password credentials. Connectivity is verified automatically.",
+  "select.telycam.note": "⚠️ All Telycam actions require this option to be enabled here.",
+
+  "controls.description": "Choose a direction and press to move the camera. Hold to move continuously; release to stop.",
+  "controls.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, overriding the active camera selection.",
+  "controls.telycam.note": "⚠️ Camera IP Default is not compatible with NEOiD By Telycam cameras.",
+
+  "speed.description": "Cycles speed for the selected type (Slowest → Slow → Normal → Fast → Fastest, then repeats).",
+
+  "zoom.description": "Hold to zoom in or out continuously; release to stop.",
+
+  "focus.description": "Hold to adjust focus continuously; release to stop. <strong>Auto Focus</strong> triggers a one-shot autofocus.",
+
+  "tracking.description": "Short press: cycle modes. Long press (≈1 s): activate selected mode. Short press while active: deactivate.<br><br>NEOiD modes: Presenter, Zone, Auto Frame.<br>Telycam modes: Tracking, Head Framing, Body Framing.",
+  "tracking.telycam.note": "⚠️ Telycam tracking modes are currently in BETA.",
+
+  "backlight.description": "Toggles backlight compensation on/off. Use when a bright background causes the subject to appear dark.",
+
+  "preset.description": "Short press: recall preset. Long press (≈1 s): save current position as preset. Enable <strong>Image</strong> to attach a snapshot thumbnail to the button.",
+  "preset.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, bypassing the Select Camera action.",
+  "preset.telycam.note": "⚠️ Telycam cameras do not support snapshots. Camera IP Default is not compatible with NEOiD By Telycam.",
+
+  "osd.description": "Controls the camera on-screen menu. Use <strong>PTZ Controls</strong> to navigate after OSD is open. <strong>OSD Enter</strong> confirms, <strong>OSD Back</strong> returns.",
+
+  "focusDial.description": "Rotate the dial to adjust focus.",
+
+  "zoomDial.description": "Rotate the dial to adjust zoom."
+}

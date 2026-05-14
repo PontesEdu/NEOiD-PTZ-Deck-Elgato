@@ -14,9 +14,6 @@ sdpi-select{
   margin-bottom: 20px;
 }
 
-#separate-field{
-  margin-bottom: 20px;
-}
 
 .p-local{
   font-size: 1rem;
@@ -33,7 +30,19 @@ h3{
 }
 
 p{
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   padding-bottom: 5px;
   letter-spacing: 0.7px;
+}
+
+.pi-description {
+  border-top: 1px solid rgba(225, 224, 232, 0.2);
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+.pi-note {
+  color: rgba(255, 200, 80, 0.9);
+  font-size: 0.75rem;
+  margin-top: 6px;
 }

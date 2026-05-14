@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <script src="sdpi-components.js"></script>
-  <title>PTZ Controls</title>
-  
+  <script src="./i18n.js"></script>
+  <title>NEOiD PTZ - Controls</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h3>NEOiD PTZ Deck - Controls PTZ</h3>
-  
+
   <div id="separate-field">
     <sdpi-item label="Direction">
       <sdpi-select setting="direction" default="none" placeholder="Select direction">
@@ -24,82 +24,26 @@
         <option value="rightup">Right Up</option>
         <option value="rightdown">Right Down</option>
       </sdpi-select>
-    </sdpi-item> 
+    </sdpi-item>
 
-    <sdpi-item label="Default">
+    <sdpi-item label="Camera IP Default">
       <sdpi-checkbox id="isDefault" setting="isDefault"></sdpi-checkbox>
-    </sdpi-item> 
+    </sdpi-item>
 
     <div id="camera-form">
       <sdpi-item label="IP">
         <sdpi-textfield setting="cameraIPControls" placeholder="Camera IP: 192.168.100.88"></sdpi-textfield>
       </sdpi-item>
     </div>
-
   </div>
 
-  <p class="p-local">🇧🇷 Português:</p>
-  <p class="p-text">
-    Para usar os controles PTZ, primeiro escolha a direção para mover a câmera, como Home, Cima, Baixo, Esquerda, Direita ou opções Diagonais. Em seguida, pressione o botão para executar o movimento.
-    <br>
-    <br>
-    Ao ativar a opção Camera IP Default, será exibido um campo para inserir o IP da câmera. Após informar um IP válido, a ação exibirá o título Default e os controles PTZ passarão a operar exclusivamente a câmera definida nesse campo, ignorando a seleção do menu Select Camera.
-    <br>
-    ⚠️ Importante: o Camera IP Default não é compatível com câmeras NEOiD By Telycam.
-    Para controlar uma câmera NEOiD By Telycam, é obrigatório selecionar a opção NEOID by Telycam na ação Select Camera.
-  </p>
-
-  <p class="p-local">🇺🇸 English:</p>
-  <p class="p-text">
-    To use the PTZ controls, first choose the direction you want the camera to move, such as Home, Up, Down, Left, Right, or Diagonal options. Then press the button to perform the movement.
-    <br>
-    <br>
-    When the Camera IP Default option is enabled, a field will appear allowing you to enter the camera IP. After providing a valid IP, the action will display the Default title, and the PTZ controls will operate only the camera specified in this IP field, ignoring the Select Camera menu.
-    <br>
-    ⚠️ Important: Camera IP Default is not compatible with NEOiD By Telycam.
-    To control a Telycam camera, you must select NEOID by Telycam in the Select Camera action.
-  </p>
+  <div class="pi-description">
+    <p data-i18n="controls.description"></p>
+    <p data-i18n="controls.ipDefault.description"></p>
+    <p class="pi-note" data-i18n="controls.telycam.note"></p>
+  </div>
 
   <script src="./ptz-settings.js"></script>
-  <script>
-    const credentialsDiv = document.getElementById("camera-form");
-    const checkbox = document.getElementById("isDefault");
-
-    // Atualiza UI com base no valor dos settings
-    function updateUI(isDefault) {
-      credentialsDiv.style.display = isDefault ? "block" : "none";
-    }
-
-    // Captura o inner checkbox dentro do sdpi-checkbox
-    const innerInput = checkbox.shadowRoot?.querySelector('input[type="checkbox"]');
-
-    // Se existir, escuta mudança imediata
-    if (innerInput) {
-      innerInput.addEventListener("change", async () => {
-        // Pega settings atuais
-        const { settings } = await SDPIComponents.streamDeckClient.getSettings();
-
-        // Atualiza o valor de isDefault
-        settings.isDefault = innerInput.checked;
-
-        // Persiste imediatamente
-        await SDPIComponents.streamDeckClient.send("setSettings", settings);
-
-        // Atualiza a UI
-        updateUI(innerInput.checked);
-      });
-    }
-
-    // Escuta settings quando Stream Deck confirma
-    SDPIComponents.streamDeckClient.didReceiveSettings.subscribe(({ payload }) => {
-      updateUI(!!payload.settings.isDefault);
-    });
-
-    // Inicializa UI ao abrir o PI
-    (async () => {
-      const { settings } = await SDPIComponents.streamDeckClient.getSettings();
-      updateUI(!!settings.isDefault);
-    })();
-  </script>
+  <script>setupConditionalField('isDefault', 'camera-form', 'isDefault');</script>
 </body>
 </html>

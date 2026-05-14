@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <script src="sdpi-components.js"></script>
-  <title>PTZ Select</title>
+  <script src="./i18n.js"></script>
+  <title>NEOiD PTZ - Select Camera</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h3>NEOiD PTZ Deck - Select Camera PTZ </h3>
+  <h3>NEOiD PTZ Deck - Select Camera PTZ</h3>
 
   <div id="separate-field">
-    <sdpi-item label="name">
+    <sdpi-item label="Name">
       <sdpi-textfield setting="camera" placeholder="Add name"></sdpi-textfield>
     </sdpi-item>
 
@@ -23,7 +24,7 @@
 
   <sdpi-item label="NEOiD By Telycam">
     <sdpi-checkbox id="isTelycam" setting="isTelycam"></sdpi-checkbox>
-  </sdpi-item>  
+  </sdpi-item>
 
   <div id="telycam-credentials" style="display: none;">
     <sdpi-item label="User">
@@ -35,68 +36,13 @@
     </sdpi-item>
   </div>
 
-
-  <p class="p-local">🇧🇷 Português:</p>
-  <p>
-    Para controlar uma câmera PTZ, primeiro registre a câmera informando o endereço IP no campo Camera IP e, se desejar, atribua um nome no campo Name. Caso a câmera adicionada não esteja conectada, o sistema exibirá automaticamente Not connected no lugar do nome. Sempre que for controlar uma câmera, certifique-se de selecioná-la aqui.
-    <br>
-    <br>
-    Se a opção NEOiD By Telycam estiver ativada, serão exibidos os campos User e Password. Após informar as credenciais, o sistema verificará automaticamente se a câmera está conectada.
-    <br>
-    ⚠️ Importante: para utilizar qualquer ação com câmeras Telycam, a opção NEOiD By Telycam deve estar ativada nesta ação. Sem essa opção ativa, não será possível controlar câmeras Telycam.
-  </p>
-
-  <p class="p-local">🇺🇸 English:</p>
-  <p>
-    To control a PTZ camera, first register it by entering the camera IP address in the Camera IP field and optionally assigning a name in the Name field. If the added camera is not connected, the system will automatically display Not connected instead of the name. Whenever you want to control a camera, make sure to select it here.
-    <br>
-    <br>
-    When the NEOiD By Telycam option is enabled, the User and Password fields will appear. After entering the credentials, the system will automatically check whether the camera is connected.
-    <br>
-    ⚠️ Important: to use any action with Telycam cameras, the NEOiD By Telycam option must be enabled in this action. Without it, Telycam cameras cannot be controlled.
-  </p>
+  <div class="pi-description">
+    <p data-i18n="select.description"></p>
+    <p data-i18n="select.telycam.description"></p>
+    <p class="pi-note" data-i18n="select.telycam.note"></p>
+  </div>
 
   <script src="./ptz-settings.js"></script>
-  <script>
-    const credentialsDiv = document.getElementById("telycam-credentials");
-    const checkbox = document.getElementById("isTelycam");
-
-    // Atualiza UI com base no valor dos settings
-    function updateUI(isTelycam) {
-      credentialsDiv.style.display = isTelycam ? "block" : "none";
-    }
-
-    // Captura o inner checkbox dentro do sdpi-checkbox
-    const innerInput = checkbox.shadowRoot?.querySelector('input[type="checkbox"]');
-
-    // Se existir, escuta mudança imediata
-    if (innerInput) {
-      innerInput.addEventListener("change", async () => {
-        // Pega settings atuais
-        const { settings } = await SDPIComponents.streamDeckClient.getSettings();
-
-        // Atualiza o valor de isTelycam
-        settings.isTelycam = innerInput.checked;
-
-        // Persiste imediatamente
-        await SDPIComponents.streamDeckClient.send("setSettings", settings);
-
-        // Atualiza a UI
-        updateUI(innerInput.checked);
-      });
-    }
-
-    // Escuta settings quando Stream Deck confirma
-    SDPIComponents.streamDeckClient.didReceiveSettings.subscribe(({ payload }) => {
-      updateUI(!!payload.settings.isTelycam);
-    });
-
-    // Inicializa UI ao abrir o PI
-    (async () => {
-      const { settings } = await SDPIComponents.streamDeckClient.getSettings();
-      updateUI(!!settings.isTelycam);
-    })();
-  </script>
-
+  <script>setupConditionalField('isTelycam', 'telycam-credentials', 'isTelycam');</script>
 </body>
 </html>

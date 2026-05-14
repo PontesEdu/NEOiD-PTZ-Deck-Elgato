@@ -3,33 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <script src="sdpi-components.js"></script>
-  <title>Settings PTZ - ZOOM</title>
-
+  <script src="./i18n.js"></script>
+  <title>NEOiD PTZ - Zoom</title>
   <link rel="stylesheet" href="styles.css">
-
 </head>
 <body>
   <h3>NEOiD PTZ Deck - Zoom</h3>
-  
+
   <div id="separate-field">
     <sdpi-item label="Zoom">
-      <sdpi-select setting="direction" default="none" placeholder="Select direction">
+      <sdpi-select setting="direction" default="none" placeholder="Select">
         <option value="none" disabled selected hidden>Select</option>
         <option value="zoomin">Zoom in</option>
         <option value="zoomout">Zoom out</option>
       </sdpi-select>
-    </sdpi-item> 
+    </sdpi-item>
   </div>
-  
-  <p class="p-local">🇧🇷 Português:</p>
-  <p class="p-text">
-    O botão de Zoom permite controlar a lente da câmera escolhendo entre Zoom In ou Zoom Out. Quando você seleciona Zoom In, a lente se aproxima do objeto, deixando a imagem maior e permitindo focar nos detalhes. Quando você seleciona Zoom Out, a lente se afasta, oferecendo uma visão mais ampla para que você veja mais do ambiente. Basta usar o campo de zoom para escolher o modo desejado e a câmera ajustará automaticamente.
-  </p>
 
-  <p class="p-local">🇺🇸 English:</p>
-  <p class="p-text">
-    The Zoom button lets you control the camera lens by choosing either Zoom In or Zoom Out. When you select Zoom In, the lens moves closer to the subject, making the image appear larger and allowing you to focus on details. When you select Zoom Out, the lens moves away, giving you a wider view so you can see more of the scene. Simply use the zoom field to choose the mode you want, and the camera will adjust smoothly.
-  </p>
+  <div class="pi-description">
+    <p data-i18n="zoom.description"></p>
+  </div>
 
   <script src="./ptz-settings.js"></script>
 </body>
