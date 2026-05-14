@@ -1,0 +1,30 @@
+{
+  "select.description": "Cadastre uma câmera PTZ informando o endereço IP. Atribua um nome opcional. Se offline, <strong>Not connected</strong> é exibido automaticamente. Selecione sempre a câmera desejada aqui antes de usar outras ações.",
+  "select.telycam.description": "Com <strong>NEOiD By Telycam</strong> ativado, informe Usuário e Senha. A conectividade é verificada automaticamente.",
+  "select.telycam.note": "⚠️ Todas as ações Telycam exigem que esta opção esteja ativada aqui.",
+
+  "controls.description": "Escolha uma direção e pressione para mover a câmera. Segure para mover continuamente; solte para parar.",
+  "controls.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a câmera ativa.",
+  "controls.telycam.note": "⚠️ Camera IP Default não é compatível com câmeras NEOiD By Telycam.",
+
+  "speed.description": "Alterna a velocidade para o tipo selecionado (Mínima → Lenta → Normal → Rápida → Máxima, em ciclo).",
+
+  "zoom.description": "Segure para dar zoom in ou out continuamente; solte para parar.",
+
+  "focus.description": "Segure para ajustar o foco continuamente; solte para parar. <strong>Auto Focus</strong> aciona o foco automático instantaneamente.",
+
+  "tracking.description": "Toque rápido: alterna modos. Pressão longa (≈1 s): ativa o modo selecionado. Toque rápido com ativo: desativa.<br><br>Modos NEOiD: Presenter, Zone, Auto Frame.<br>Modos Telycam: Tracking, Head Framing, Body Framing.",
+  "tracking.telycam.note": "⚠️ Os modos de rastreamento Telycam estão em BETA.",
+
+  "backlight.description": "Ativa ou desativa a compensação de retroiluminação. Use quando o fundo claro escurece o objeto em cena.",
+
+  "preset.description": "Toque rápido: chama o preset. Pressão longa (≈1 s): salva a posição atual. Ative <strong>Image</strong> para exibir uma miniatura no botão.",
+  "preset.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a ação Select Camera.",
+  "preset.telycam.note": "⚠️ Câmeras Telycam não suportam imagens neste recurso. Camera IP Default não é compatível com NEOiD By Telycam.",
+
+  "osd.description": "Controla o menu da câmera na tela. Use <strong>PTZ Controls</strong> para navegar após abrir o OSD. <strong>OSD Enter</strong> confirma, <strong>OSD Back</strong> retorna.",
+
+  "focusDial.description": "Gire o dial para ajustar o foco.",
+
+  "zoomDial.description": "Gire o dial para ajustar o zoom."
+}

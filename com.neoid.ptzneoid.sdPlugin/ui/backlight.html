@@ -3,23 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <script src="sdpi-components.js"></script>
-  <title>Settings PTZ - Backlight</title>
-
+  <script src="./i18n.js"></script>
+  <title>NEOiD PTZ - Backlight</title>
   <link rel="stylesheet" href="styles.css">
-
 </head>
 <body>
   <h3>NEOiD PTZ Deck - Backlight</h3>
-  
-  <p class="p-local">🇧🇷 Português:</p>
-  <p class="p-text"> 
-    O botão de retroiluminação funciona como um controle toggle que alterna entre ligado e desligado. Quando ativado, ele melhora a visibilidade do objeto em cena ao compensar fundos muito claros, equilibrando a exposição e tornando a imagem mais nítida. Quando desativado, a câmera mantém o ajuste padrão de iluminação. Esse recurso é útil especialmente quando o fundo está muito iluminado e o objeto aparece escurecido.
-  </p>
 
-  <p class="p-local">🇺🇸 English:</p>
-  <p class="p-text"> 
-   The backlight button functions as a toggle control that switches between on and off. When activated, it improves the visibility of the object in the scene by compensating for very bright backgrounds, balancing the exposure and making the image sharper. When deactivated, the camera maintains the default lighting setting. This feature is especially useful when the background is too bright and the object appears dark.
-  </p>
+  <div class="pi-description">
+    <p data-i18n="backlight.description"></p>
+  </div>
 
   <script src="./ptz-settings.js"></script>
 </body>

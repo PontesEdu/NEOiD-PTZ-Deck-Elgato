@@ -20,7 +20,7 @@
 		{
 			"UUID": "com.neoid.ptzneoid.ptz-controls",
 			"Name": "Controls PTZ",
-			"UserTitleEnabled": false,
+			"UserTitleEnabled": true,
 			"Tooltip": "Controls the functions",
 			"Icon": "imgs/plugin/logo-neoid@2x",
 			"States": [
@@ -112,7 +112,7 @@
 		{
 			"UUID": "com.neoid.ptzneoid.ptz-preset",
 			"Name": "Preset",
-			"UserTitleEnabled": false,
+			"UserTitleEnabled": true,
 			"Tooltip": "Controls the functions Preset (save)",
 			"Icon": "imgs/plugin/logo-neoid@2x",
 			"States": [
