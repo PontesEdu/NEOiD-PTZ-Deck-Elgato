@@ -8,17 +8,27 @@
 </head>
 <body>
   <h3>NEOiD PTZ Deck - Preset</h3>
-  
-  <sdpi-item label="image">
-    <sdpi-checkbox setting="image"></sdpi-checkbox>
-  </sdpi-item>
 
   <div id="separate-field">
     <sdpi-item label="number Preset">
       <sdpi-select setting="numberPreset" id="select-presets" default="none" placeholder="Select direction">
         <option value="none" disabled selected hidden>Select</option>
       </sdpi-select>
-    </sdpi-item> 
+    </sdpi-item>
+  </div>
+
+  <sdpi-item label="Image">
+    <sdpi-checkbox setting="image"></sdpi-checkbox>
+  </sdpi-item>
+
+  <sdpi-item label="Camera IP">
+    <sdpi-checkbox id="isDefault" setting="isDefault"></sdpi-checkbox>
+  </sdpi-item>
+
+  <div id="camera-form">
+    <sdpi-item label="IP">
+      <sdpi-textfield setting="cameraIPControls" placeholder="Camera IP: 192.168.100.88"></sdpi-textfield>
+    </sdpi-item>
   </div>
 
   <p class="p-local">🇧🇷 Português:</p>
@@ -26,7 +36,10 @@
     O botão Preset permite salvar e chamar posições da câmera de maneira rápida. Para salvar um preset, mantenha o botão pressionado por um segundo até que a posição seja registrada. Para chamar um preset salvo, basta clicar uma vez e a câmera se moverá automaticamente para a posição gravada. Se desejar adicionar uma imagem que represente onde o preset foi salvo, selecione o campo Image e escolha a foto que deseja exibir.
     <br>
     <br>
-    Obs: Câmeras da linha NEOiD by Telycam não exibem imagem neste recurso.
+    Ao ativar a opção Camera IP Default, será exibido um campo para inserir o IP da câmera. Após informar um IP válido, os presets passarão a operar exclusivamente a câmera definida nesse campo, ignorando a seleção do menu Select Camera.
+    <br>
+    <br>
+    Obs: Câmeras da linha NEOiD by Telycam não exibem imagem neste recurso. O Camera IP Default não é compatível com câmeras NEOiD By Telycam.
   </p>
 
   <p class="p-local">🇺🇸 English:</p>
@@ -34,7 +47,10 @@
     The Preset button allows you to save and recall camera positions quickly. To save a preset, press and hold the button for one second until the position is stored. To recall a saved preset, simply press the button once and the camera will move to the saved location. If you want to attach an image that represents where the preset was saved, select the Image field and choose the picture you want to display.
     <br>
     <br>
-    Note: Cameras from the NEOiD by Telycam line do not display images in this feature.
+    When the Camera IP Default option is enabled, a field will appear allowing you to enter the camera IP. After providing a valid IP, the presets will operate only the camera specified in this IP field, ignoring the Select Camera menu.
+    <br>
+    <br>
+    Note: Cameras from the NEOiD by Telycam line do not display images in this feature. Camera IP Default is not compatible with NEOiD By Telycam cameras.
   </p>
 
   <script src="./ptz-settings.js"></script>
@@ -46,8 +62,33 @@
       option.value = i;
       option.textContent = i;
       select.appendChild(option);
-    }    
+    }
 
+    const credentialsDiv = document.getElementById("camera-form");
+    const checkbox = document.getElementById("isDefault");
+
+    function updateUI(isDefault) {
+      credentialsDiv.style.display = isDefault ? "block" : "none";
+    }
+
+    const innerInput = checkbox.shadowRoot?.querySelector('input[type="checkbox"]');
+    if (innerInput) {
+      innerInput.addEventListener("change", async () => {
+        const { settings } = await SDPIComponents.streamDeckClient.getSettings();
+        settings.isDefault = innerInput.checked;
+        await SDPIComponents.streamDeckClient.send("setSettings", settings);
+        updateUI(innerInput.checked);
+      });
+    }
+
+    SDPIComponents.streamDeckClient.didReceiveSettings.subscribe(({ payload }) => {
+      updateUI(!!payload.settings.isDefault);
+    });
+
+    (async () => {
+      const { settings } = await SDPIComponents.streamDeckClient.getSettings();
+      updateUI(!!settings.isDefault);
+    })();
   </script>
 </body>
 </html>
