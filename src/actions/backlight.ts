@@ -20,7 +20,7 @@ export class Backlight extends SingletonAction {
     const globals = await this.getGlobals();
     if (await noCameraGuard(action, globals)) return;
     if (state !== undefined) {
-      await action.setTitle(state ? "Backlight\nON" : "Backlight\nOFF");
+      await action.setTitle(state ? "ON" : "OFF");
     }
   }
 
