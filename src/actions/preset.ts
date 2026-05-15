@@ -22,6 +22,7 @@ function resolvePresetNumber(settings: PtzPresetProps): number {
 export class PTZPreset extends SingletonAction<PtzPresetProps> {
   private pressTimer: ReturnType<typeof setTimeout> | null = null;
   private longPress = false;
+  private settingsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   private async updateVisual(ev: WillAppearEvent<PtzPresetProps> | DidReceiveSettingsEvent, checkConnectivity = false): Promise<void> {
     const settings = ev.payload.settings as PtzPresetProps;
@@ -86,7 +87,14 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
       ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
     }
 
-    if (settings.isDefault ?? false) return;
+    if (settings.isDefault ?? false) {
+      if (this.settingsDebounceTimer) clearTimeout(this.settingsDebounceTimer);
+      this.settingsDebounceTimer = setTimeout(async () => {
+        this.settingsDebounceTimer = null;
+        await this.updateVisual(ev, true);
+      }, 1500);
+      return;
+    }
 
     await this.updateVisual(ev);
   }
@@ -113,6 +121,11 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
   }
 
   override async onPropertyInspectorDidDisappear(ev: PropertyInspectorDidDisappearEvent) {
+    if (this.settingsDebounceTimer) {
+      clearTimeout(this.settingsDebounceTimer);
+      this.settingsDebounceTimer = null;
+    }
+
     const settings = await ev.action.getSettings<PtzPresetProps>();
     const isDefault = settings.isDefault ?? false;
 
@@ -268,6 +281,10 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     if (this.pressTimer) {
       clearTimeout(this.pressTimer);
       this.pressTimer = null;
+    }
+    if (this.settingsDebounceTimer) {
+      clearTimeout(this.settingsDebounceTimer);
+      this.settingsDebounceTimer = null;
     }
   }
 }
