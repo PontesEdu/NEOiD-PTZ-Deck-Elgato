@@ -1,10 +1,11 @@
-import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyUpEvent, PropertyInspectorDidAppearEvent, PropertyInspectorDidDisappearEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { GlobalSettings } from "../types";
 import { imageSnapShot } from "../utils/snapshot";
 import { noCameraGuard } from "../utils/no-camera-guard";
 import { resolveCamera } from "../utils/camera-api";
 import { globalKeys } from "../utils/global-keys";
 import { APINeoid } from "../api/api-neoid";
+import { checkCameraConnection } from "../utils/checkCameraConnection";
 
 type PtzPresetProps = {
   numberPreset: number | "undefined";
@@ -21,8 +22,9 @@ function resolvePresetNumber(settings: PtzPresetProps): number {
 export class PTZPreset extends SingletonAction<PtzPresetProps> {
   private pressTimer: ReturnType<typeof setTimeout> | null = null;
   private longPress = false;
+  private settingsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private async updateVisual(ev: WillAppearEvent<PtzPresetProps> | DidReceiveSettingsEvent): Promise<void> {
+  private async updateVisual(ev: WillAppearEvent<PtzPresetProps> | DidReceiveSettingsEvent, checkConnectivity = false): Promise<void> {
     const settings = ev.payload.settings as PtzPresetProps;
     const presetNumber = resolvePresetNumber(settings);
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
@@ -37,8 +39,19 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         await ev.action.setTitle("Select");
         return;
       }
+      if (checkConnectivity) {
+        const connected = await checkCameraConnection(cameraIP, 1000);
+        if (!connected) {
+          await ev.action.setImage("");
+          await ev.action.setTitle("Not connect");
+          return;
+        }
+      }
     } else {
-      if (await noCameraGuard(ev.action, globals)) return;
+      if (await noCameraGuard(ev.action, globals)) {
+        await ev.action.setImage("");
+        return;
+      }
       cameraIP = globals.cameraIP as string;
     }
 
@@ -63,7 +76,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
   }
 
   override async onWillAppear(ev: WillAppearEvent<PtzPresetProps>) {
-    await this.updateVisual(ev);
+    await this.updateVisual(ev, true);
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent) {
@@ -72,6 +85,15 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
     if ((settings.isDefault ?? false) && !settings.cameraIPControls) {
       ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
+    }
+
+    if (settings.isDefault ?? false) {
+      if (this.settingsDebounceTimer) clearTimeout(this.settingsDebounceTimer);
+      this.settingsDebounceTimer = setTimeout(async () => {
+        this.settingsDebounceTimer = null;
+        await this.updateVisual(ev, true);
+      }, 1500);
+      return;
     }
 
     await this.updateVisual(ev);
@@ -84,6 +106,50 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     if ((settings.isDefault ?? false) && !settings.cameraIPControls) {
       ev.action.setSettings({ ...settings, cameraIPControls: globals.cameraIPControls ?? "192.168.100.88" });
     }
+
+    const isDefault = settings.isDefault ?? false;
+    if (!isDefault) return;
+
+    const cameraIP = settings.cameraIPControls || globals.cameraIPControls || "";
+    if (!cameraIP) return;
+
+    const connected = await checkCameraConnection(cameraIP, 1000);
+    if (!connected) {
+      await ev.action.setImage("");
+      await ev.action.setTitle("Not connect");
+    }
+  }
+
+  override async onPropertyInspectorDidDisappear(ev: PropertyInspectorDidDisappearEvent) {
+    if (this.settingsDebounceTimer) {
+      clearTimeout(this.settingsDebounceTimer);
+      this.settingsDebounceTimer = null;
+    }
+
+    const settings = await ev.action.getSettings<PtzPresetProps>();
+    const isDefault = settings.isDefault ?? false;
+
+    if (!isDefault) return;
+
+    const cameraIP = settings.cameraIPControls || "";
+    if (!cameraIP) return;
+
+    const connected = await checkCameraConnection(cameraIP, 1000);
+    if (!connected) {
+      await ev.action.setImage("");
+      await ev.action.setTitle("Not connect");
+      return;
+    }
+
+    const presetNumber = resolvePresetNumber(settings);
+    const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
+    if (settings.image) {
+      const image = globals[globalKeys.presetImage(presetNumber, cameraIP)];
+      await ev.action.setImage(image ? String(image) : "");
+    } else {
+      await ev.action.setImage("");
+    }
+    await ev.action.setTitle(`${presetNumber}`);
   }
 
   override async onKeyDown(ev: KeyDownEvent<PtzPresetProps>) {
@@ -101,12 +167,27 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
       return;
     }
 
+    // Timer setado antes do check async: garante que onKeyUp sempre encontre o timer para cancelar.
+    // Se o check falhar, cancelamos o timer aqui mesmo.
     this.longPress = false;
     if (this.pressTimer) clearTimeout(this.pressTimer);
     this.pressTimer = setTimeout(() => {
       this.longPress = true;
       this.savePreset(ev, cameraIP as string, presetNumber);
     }, 1100);
+
+    if (isDefault) {
+      const connected = await checkCameraConnection(cameraIP, 1000);
+      if (!connected) {
+        if (this.pressTimer) {
+          clearTimeout(this.pressTimer);
+          this.pressTimer = null;
+        }
+        this.longPress = true;
+        await ev.action.setImage("");
+        await ev.action.setTitle("Not connect");
+      }
+    }
   }
 
   override async onKeyUp(ev: KeyUpEvent<PtzPresetProps>) {
@@ -200,6 +281,10 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     if (this.pressTimer) {
       clearTimeout(this.pressTimer);
       this.pressTimer = null;
+    }
+    if (this.settingsDebounceTimer) {
+      clearTimeout(this.settingsDebounceTimer);
+      this.settingsDebounceTimer = null;
     }
   }
 }
