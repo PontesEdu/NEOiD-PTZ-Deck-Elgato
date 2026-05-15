@@ -7,7 +7,7 @@ import { resolveCamera } from "../../utils/camera-api";
 
 @action({ UUID: "com.neoid.ptzneoid.zoom-dial" })
 export class ZoomDial extends SingletonAction {
-  private stopzoomTimer: NodeJS.Timeout | null = null;
+  private stopZoomTimer: NodeJS.Timeout | null = null;
 
   override async onDialRotate(ev: DialRotateEvent): Promise<void> {
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
@@ -15,8 +15,8 @@ export class ZoomDial extends SingletonAction {
     if (await noCameraGuard(ev.action, globals)) return;
 
     // Cancelar timer existente
-    if (this.stopzoomTimer) {
-      clearTimeout(this.stopzoomTimer);
+    if (this.stopZoomTimer) {
+      clearTimeout(this.stopZoomTimer);
     }
 
     // Direção do giro
@@ -36,10 +36,10 @@ export class ZoomDial extends SingletonAction {
     ctx.api.moveZoom(direction, speed);
 
     // Setup do timer de stop (ex: 200 ms após a última rotação)
-    this.stopzoomTimer = setTimeout(() => {
+    this.stopZoomTimer = setTimeout(() => {
       resolveCamera(globals)?.api.stopZoom();
       ev.action.setTitle(`Zoom`);
-      this.stopzoomTimer = null;
+      this.stopZoomTimer = null;
     }, 200); // 200 ms sem girar = parar
   }
 
@@ -58,9 +58,9 @@ export class ZoomDial extends SingletonAction {
   }
 
   override async onWillDisappear(_ev: WillDisappearEvent): Promise<void> {
-    if (!this.stopzoomTimer) return;
-    clearTimeout(this.stopzoomTimer);
-    this.stopzoomTimer = null;
+    if (!this.stopZoomTimer) return;
+    clearTimeout(this.stopZoomTimer);
+    this.stopZoomTimer = null;
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     resolveCamera(globals)?.api.stopZoom();
   }
