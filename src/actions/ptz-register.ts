@@ -87,16 +87,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
     if(!settings.cameraIP){
       await ev.action.setSettings({...settings, cameraIP: globals.cameraIP});
       cameraIP = globals.cameraIP as string
-    } 
-    
-    // const checkCamera = await checkCameraConnection(`${cameraIP}`, this.timeCheck)
-  
-    // if(!checkCamera) {
-    //   ev.action.setTitle('Not\nConnect')
-    // } else {
-    //   const titleName = settings.camera === undefined ? "" : settings.camera
-    //   await ev.action.setTitle(`${titleName}`)
-    // }
+    }
 
     const isTelycam  = settings.isTelycam === undefined ? false : settings.isTelycam
     let titleName;
