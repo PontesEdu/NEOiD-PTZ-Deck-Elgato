@@ -19,7 +19,7 @@ export class Osd extends SingletonAction<PtzOsdProps> {
     if (await noCameraGuard(ev.action, globals)) return;
 
     if(mode === "back"){
-      await ev.action.setTitle("Back OSB");
+      await ev.action.setTitle("Back OSD");
       await ev.action.setImage(`imgs/actions/back`);
 
     } else if(mode === "enter") {
@@ -40,7 +40,7 @@ export class Osd extends SingletonAction<PtzOsdProps> {
 
     // Converte para booleano corretamente
     if(mode === "back"){
-      await ev.action.setTitle("Back OSB");
+      await ev.action.setTitle("Back OSD");
       await ev.action.setImage(`imgs/actions/back`);
     }  else if(mode === "enter") {
 
@@ -67,7 +67,7 @@ export class Osd extends SingletonAction<PtzOsdProps> {
       if(mode === "back"){
         sendViscaUDP(cameraIP, "81 01 06 06 10 FF")
 
-        await ev.action.setTitle("Back OSB");
+        await ev.action.setTitle("Back OSD");
         await ev.action.setImage(`imgs/actions/back`);
 
       } else if(mode === "enter") {
@@ -92,7 +92,7 @@ export class Osd extends SingletonAction<PtzOsdProps> {
       if(mode === "back"){
         await fetch(`http://${cameraIP}/cgi-bin/param.cgi?navigate_mode&OSD_BACK`)
 
-        await ev.action.setTitle("Back OSB");
+        await ev.action.setTitle("Back OSD");
         await ev.action.setImage(`imgs/actions/back`);
 
       } else if(mode === "enter") {
