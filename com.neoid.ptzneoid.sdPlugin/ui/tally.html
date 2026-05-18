@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="sdpi-components.js"></script>
+  <script src="./i18n.js"></script>
+  <title>NEOiD PTZ - Tally Light</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h3>NEOiD PTZ Deck - Tally Light</h3>
+
+  <sdpi-item label="Camera IP Default">
+    <sdpi-checkbox id="isDefault" setting="isDefault"></sdpi-checkbox>
+  </sdpi-item>
+
+  <div id="camera-form">
+    <sdpi-item label="IP">
+      <sdpi-textfield setting="cameraIPControls" placeholder="192.168.100.88"></sdpi-textfield>
+    </sdpi-item>
+    <sdpi-item label="Camera Type">
+      <sdpi-select setting="cameraType" default="neoid">
+        <option value="neoid">NEOiD</option>
+        <option value="telycam">Telycam</option>
+      </sdpi-select>
+    </sdpi-item>
+    <div class="pi-description">
+      <p data-i18n="tally.ipDefault.description"></p>
+    </div>
+  </div>
+
+  <div class="pi-description">
+    <p data-i18n="tally.description"></p>
+  </div>
+
+  <script src="./ptz-settings.js"></script>
+  <script>setupConditionalField('isDefault', 'camera-form', 'isDefault');</script>
+</body>
+</html>

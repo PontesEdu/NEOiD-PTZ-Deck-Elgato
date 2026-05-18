@@ -257,6 +257,28 @@ export class APINeoid {
   }
 
 
+  // Tally — envia dois conjuntos de VISCA para cobertura de firmware
+  async sendTally(state: "red" | "green" | "off") {
+    if (state === "red") {
+      await fetch(`${this.baseUrlVisca}=810a02020201FF`)
+      await fetch(`${this.baseUrlVisca}=81017e010a0002FF`)
+      sendViscaTCP(this.IP, "81 0a 02 02 02 01 FF")
+      sendViscaTCP(this.IP, "81 01 7e 01 0a 00 02 FF")
+    } else if (state === "green") {
+      await fetch(`${this.baseUrlVisca}=810a02020200FF`)
+      await fetch(`${this.baseUrlVisca}=81017e010a0001FF`)
+      sendViscaTCP(this.IP, "81 0a 02 02 02 00 FF")
+      sendViscaTCP(this.IP, "81 01 7e 01 0a 00 01 FF")
+    } else {
+      await fetch(`${this.baseUrlVisca}=810a02020301FF`)
+      await fetch(`${this.baseUrlVisca}=810a02020300FF`)
+      await fetch(`${this.baseUrlVisca}=81017e010a0003FF`)
+      sendViscaTCP(this.IP, "81 0a 02 02 03 01 FF")
+      sendViscaTCP(this.IP, "81 0a 02 02 03 00 FF")
+      sendViscaTCP(this.IP, "81 01 7e 01 0a 00 03 FF")
+    }
+  }
+
   // Freeze — firmware 1: VISCA via HTTP | firmware 2: VISCA via TCP
   async sendFreeze(enable: boolean) {
     if (enable) {
