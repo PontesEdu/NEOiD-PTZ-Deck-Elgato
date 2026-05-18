@@ -212,6 +212,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
       camera: titleName,
       keyTelycam: key,
       isTelycam: true,
+      isFrozen: false,
     });
     return true;
   }
@@ -243,6 +244,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
       cameraIP,
       camera: titleName,
       isTelycam: false,
+      isFrozen: false,
     });
 
     // Lê estado de tracking da câmera e persiste nos globals antes do broadcast.
