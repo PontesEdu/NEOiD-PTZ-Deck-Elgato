@@ -1,6 +1,8 @@
 import type { SpeedType } from "../types";
 import { PTZ_DIRECTIONS, zoomFocusSpeed } from "../constants";
 import type { PTZDirection } from "../constants";
+import { sendViscaUDP } from "../utils/send-visca-udp";
+import { sendViscaTCP } from "../utils/send-visca-tcp";
 
 export type { SpeedType, PTZDirection };
 export { PTZ_DIRECTIONS, zoomFocusSpeed };
@@ -254,6 +256,17 @@ export class APINeoid {
     }
   }
 
+
+  // Freeze — firmware 1: VISCA via HTTP | firmware 2: VISCA via TCP
+  async sendFreeze(enable: boolean) {
+    if (enable) {
+      await fetch(`${this.baseUrlVisca}=8101046202FF`)
+      sendViscaTCP(this.IP, "81 01 04 62 02 FF")
+    } else {
+      await fetch(`${this.baseUrlVisca}=8101046203FF`)
+      sendViscaTCP(this.IP, "81 01 04 62 03 FF")
+    }
+  }
 
   // Backlight
   async toggleBacklight(enable: boolean) {

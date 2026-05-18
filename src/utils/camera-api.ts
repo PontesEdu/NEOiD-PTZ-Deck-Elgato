@@ -13,6 +13,7 @@ export interface CameraAPI {
   callPreset(n: number): Promise<void>;
   addSetPreset(n: number): Promise<void>;
   toggleBacklight(enable: boolean): Promise<void>;
+  sendFreeze(freeze: boolean): Promise<void>;
 }
 
 class NeoidAdapter implements CameraAPI {
@@ -28,6 +29,7 @@ class NeoidAdapter implements CameraAPI {
   callPreset(n: number)                                                  { return this.api.CallPreset(n); }
   addSetPreset(n: number)                                                { return this.api.AddSetPreset(n); }
   toggleBacklight(enable: boolean)                                       { return this.api.toggleBacklight(enable); }
+  sendFreeze(freeze: boolean)                                            { return this.api.sendFreeze(freeze); }
 }
 
 class TelycamAdapter implements CameraAPI {
@@ -43,6 +45,7 @@ class TelycamAdapter implements CameraAPI {
   callPreset(n: number)                                                  { return this.api.CallPreset(n); }
   addSetPreset(n: number)                                                { return this.api.AddSetPreset(n); }
   toggleBacklight(enable: boolean)                                       { return this.api.toggleBacklight(enable); }
+  sendFreeze(freeze: boolean)                                            { return this.api.sendFreeze(freeze); }
 }
 
 export type CameraContext = { cameraIP: string; api: CameraAPI };
