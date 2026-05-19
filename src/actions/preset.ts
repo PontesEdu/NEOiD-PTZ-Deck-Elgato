@@ -5,6 +5,7 @@ import { noCameraGuard } from "../utils/no-camera-guard";
 import { resolveCamera } from "../utils/camera-api";
 import { globalKeys } from "../utils/global-keys";
 import { APINeoid } from "../api/api-neoid";
+import { APITelycam } from "../api/api-telycam";
 import { checkCameraConnection } from "../utils/checkCameraConnection";
 
 type PtzPresetProps = {
@@ -12,6 +13,7 @@ type PtzPresetProps = {
   image: boolean;
   isDefault: boolean;
   cameraIPControls: string;
+  cameraType?: "neoid" | "telycam";
 };
 
 function resolvePresetNumber(settings: PtzPresetProps): number {
@@ -39,7 +41,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         await ev.action.setTitle("Select");
         return;
       }
-      if (checkConnectivity) {
+      if (checkConnectivity && settings.cameraType !== "telycam") {
         const connected = await checkCameraConnection(cameraIP, 1000);
         if (!connected) {
           await ev.action.setImage("");
@@ -56,7 +58,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     }
 
     if (!isNaN(presetNumber)) {
-      const isTelycam = isDefault ? false : globals.isTelycam;
+      const isTelycam = isDefault ? settings.cameraType === "telycam" : globals.isTelycam;
       if (isTelycam) {
         await ev.action.setImage("");
         await ev.action.setTitle(`${presetNumber}`);
@@ -113,6 +115,8 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const cameraIP = settings.cameraIPControls || globals.cameraIPControls || "";
     if (!cameraIP) return;
 
+    if (settings.cameraType === "telycam") return;
+
     const connected = await checkCameraConnection(cameraIP, 1000);
     if (!connected) {
       await ev.action.setImage("");
@@ -134,14 +138,20 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const cameraIP = settings.cameraIPControls || "";
     if (!cameraIP) return;
 
+    const presetNumber = resolvePresetNumber(settings);
+
+    if (settings.cameraType === "telycam") {
+      await ev.action.setImage("");
+      await ev.action.setTitle(`${presetNumber}`);
+      return;
+    }
+
     const connected = await checkCameraConnection(cameraIP, 1000);
     if (!connected) {
       await ev.action.setImage("");
       await ev.action.setTitle("Not connect");
       return;
     }
-
-    const presetNumber = resolvePresetNumber(settings);
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     if (settings.image) {
       const image = globals[globalKeys.presetImage(presetNumber, cameraIP)];
@@ -176,7 +186,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
       this.savePreset(ev, cameraIP as string, presetNumber);
     }, 1100);
 
-    if (isDefault) {
+    if (isDefault && settings.cameraType !== "telycam") {
       const connected = await checkCameraConnection(cameraIP, 1000);
       if (!connected) {
         if (this.pressTimer) {
@@ -209,15 +219,20 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
     if (!this.longPress) {
       if (isDefault) {
-        const api = new APINeoid({ IP: cameraIP as string });
-        api.CallPreset(presetNumber);
+        if (settings.cameraType === "telycam") {
+          const api = new APITelycam({ IP: cameraIP as string, key: 0 });
+          api.CallPresetVISCA(presetNumber);
+        } else {
+          const api = new APINeoid({ IP: cameraIP as string });
+          api.CallPreset(presetNumber);
+        }
       } else {
         const ctx = resolveCamera(globals);
         if (!ctx) return;
         ctx.api.callPreset(presetNumber);
       }
 
-      const isTelycam = isDefault ? false : globals.isTelycam;
+      const isTelycam = isDefault ? settings.cameraType === "telycam" : globals.isTelycam;
       if (!isTelycam) {
         if (settings.image) {
           const image = globals[globalKeys.presetImage(presetNumber, cameraIP as string)];
@@ -237,8 +252,13 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const isDefault = settings.isDefault ?? false;
 
     if (isDefault) {
-      const api = new APINeoid({ IP: cameraIP });
-      api.AddSetPreset(presetNumber);
+      if (settings.cameraType === "telycam") {
+        const api = new APITelycam({ IP: cameraIP, key: 0 });
+        api.AddSetPresetVISCA(presetNumber);
+      } else {
+        const api = new APINeoid({ IP: cameraIP });
+        api.AddSetPreset(presetNumber);
+      }
     } else {
       const ctx = resolveCamera(globals);
       if (!ctx) return;
@@ -250,7 +270,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
 
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const isTelycam = isDefault ? false : globals.isTelycam;
+    const isTelycam = isDefault ? settings.cameraType === "telycam" : globals.isTelycam;
 
     if (isTelycam) {
       await ev.action.setImage("");
