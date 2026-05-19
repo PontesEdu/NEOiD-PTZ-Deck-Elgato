@@ -110,6 +110,20 @@
 			"PropertyInspectorPath": "ui/backlight.html"
 		},
 		{
+			"UUID": "com.neoid.ptzneoid.tally",
+			"Name": "Tally Light",
+			"UserTitleEnabled": true,
+			"Tooltip": "Controla o LED de tally da câmera. Press curto = RED, press longo = GREEN.",
+			"Icon": "imgs/plugin/logo-neoid@2x",
+			"States": [
+				{
+					"Image": "imgs/actions/backlight",
+					"FontSize": 8
+				}
+			],
+			"PropertyInspectorPath": "ui/tally.html"
+		},
+		{
 			"UUID": "com.neoid.ptzneoid.freeze",
 			"Name": "Image Freeze",
 			"UserTitleEnabled": false,
