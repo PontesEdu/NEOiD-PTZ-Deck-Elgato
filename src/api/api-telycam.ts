@@ -223,6 +223,16 @@ export class APITelycam {
     })
   }
 
+  async CallPresetVISCA(numberPreset: number) {
+    const pp = numberPreset.toString(16).padStart(2, '0');
+    sendViscaUDP(this.IP, `81 01 04 3F 02 ${pp} FF`);
+  }
+
+  async AddSetPresetVISCA(numberPreset: number) {
+    const pp = numberPreset.toString(16).padStart(2, '0');
+    sendViscaUDP(this.IP, `81 01 04 3F 01 ${pp} FF`);
+  }
+
 
   // Tracking
   async SetTrackingActive(active: boolean) {

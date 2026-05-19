@@ -22,9 +22,9 @@
 
       "backlight.description": "Toggles backlight compensation on/off. Use when a bright background causes the subject to appear dark.",
 
-      "preset.description": "Short press: recall preset. Long press (≈1 s): save current position as preset. Enable <strong>Image</strong> to attach a snapshot thumbnail to the button.",
-      "preset.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, bypassing the Select Camera action.",
-      "preset.telycam.note": "⚠️ Telycam cameras do not support snapshots. Camera IP Default is not compatible with NEOiD By Telycam.",
+      "preset.description": "Short press: recall preset. Long press (≈1 s): save current position as preset. For NEOiD cameras, enable <strong>Image</strong> to attach a snapshot thumbnail to the button.",
+      "preset.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, bypassing the Select Camera action. Use <strong>Camera Type</strong> to select NEOiD or Telycam.",
+      "preset.telycam.note": "⚠️ Telycam cameras do not support snapshot images — the Image option is hidden automatically.",
 
       "osd.description": "Controls the camera on-screen menu. Use <strong>PTZ Controls</strong> to navigate after OSD is open. <strong>OSD Enter</strong> confirms, <strong>OSD Back</strong> returns.",
 
@@ -57,9 +57,9 @@
 
       "backlight.description": "Ativa ou desativa a compensação de retroiluminação. Use quando o fundo claro escurece o objeto em cena.",
 
-      "preset.description": "Toque rápido: chama o preset. Pressão longa (≈1 s): salva a posição atual. Ative <strong>Image</strong> para exibir uma miniatura no botão.",
-      "preset.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a ação Select Camera.",
-      "preset.telycam.note": "⚠️ Câmeras Telycam não suportam imagens neste recurso. Camera IP Default não é compatível com NEOiD By Telycam.",
+      "preset.description": "Toque rápido: chama o preset. Pressão longa (≈1 s): salva a posição atual. Para câmeras NEOiD, ative <strong>Image</strong> para exibir uma miniatura no botão.",
+      "preset.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a ação Select Camera. Use <strong>Camera Type</strong> para selecionar NEOiD ou Telycam.",
+      "preset.telycam.note": "⚠️ Câmeras Telycam não suportam snapshot — a opção Image é ocultada automaticamente.",
 
       "osd.description": "Controla o menu da câmera na tela. Use <strong>PTZ Controls</strong> para navegar após abrir o OSD. <strong>OSD Enter</strong> confirma, <strong>OSD Back</strong> retorna.",
 

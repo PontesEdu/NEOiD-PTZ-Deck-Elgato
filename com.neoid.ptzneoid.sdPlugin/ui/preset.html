@@ -18,9 +18,11 @@
     </sdpi-item>
   </div>
 
-  <sdpi-item label="Image">
-    <sdpi-checkbox setting="image"></sdpi-checkbox>
-  </sdpi-item>
+  <div id="image-row">
+    <sdpi-item label="Image">
+      <sdpi-checkbox setting="image"></sdpi-checkbox>
+    </sdpi-item>
+  </div>
 
   <sdpi-item label="Camera IP Default">
     <sdpi-checkbox id="isDefault" setting="isDefault"></sdpi-checkbox>
@@ -29,6 +31,12 @@
   <div id="camera-form">
     <sdpi-item label="IP">
       <sdpi-textfield setting="cameraIPControls" placeholder="Camera IP: 192.168.100.88"></sdpi-textfield>
+    </sdpi-item>
+    <sdpi-item label="Camera Type">
+      <sdpi-select setting="cameraType" default="neoid">
+        <option value="neoid">NEOiD</option>
+        <option value="telycam">Telycam</option>
+      </sdpi-select>
     </sdpi-item>
   </div>
 
@@ -48,6 +56,44 @@
       select.appendChild(option);
     }
     setupConditionalField('isDefault', 'camera-form', 'isDefault');
+
+    (function () {
+      const { streamDeckClient } = SDPIComponents;
+      let currentSettings = {};
+      let globalIsTelycam = false;
+
+      function imageVisible() {
+        if (currentSettings.isDefault) {
+          return currentSettings.cameraType !== 'telycam';
+        }
+        return !globalIsTelycam;
+      }
+
+      function refreshImageRow() {
+        const row = document.getElementById('image-row');
+        if (row) row.style.display = imageVisible() ? '' : 'none';
+      }
+
+      streamDeckClient.didReceiveSettings.subscribe(({ payload }) => {
+        currentSettings = payload.settings;
+        refreshImageRow();
+      });
+
+      streamDeckClient.didReceiveGlobalSettings.subscribe(({ payload }) => {
+        globalIsTelycam = !!payload.settings.isTelycam;
+        refreshImageRow();
+      });
+
+      (async () => {
+        const [{ settings }, globalPayload] = await Promise.all([
+          streamDeckClient.getSettings(),
+          streamDeckClient.getGlobalSettings()
+        ]);
+        currentSettings = settings;
+        globalIsTelycam = !!globalPayload.settings.isTelycam;
+        refreshImageRow();
+      })();
+    })();
   </script>
 </body>
 </html>
