@@ -8,8 +8,7 @@
       "select.telycam.note": "⚠️ All Telycam actions require this option to be enabled here.",
 
       "controls.description": "Choose a direction and press to move the camera. Hold to move continuously; release to stop.",
-      "controls.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, overriding the active camera selection.",
-      "controls.telycam.note": "⚠️ Camera IP Default is not compatible with NEOiD By Telycam cameras.",
+      "controls.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, overriding the active camera selection. Use <strong>Camera Type</strong> to select NEOiD or Telycam.",
 
       "speed.description": "Cycles speed for the selected type (Slowest → Slow → Normal → Fast → Fastest, then repeats).",
 
@@ -43,8 +42,7 @@
       "select.telycam.note": "⚠️ Todas as ações Telycam exigem que esta opção esteja ativada aqui.",
 
       "controls.description": "Escolha uma direção e pressione para mover a câmera. Segure para mover continuamente; solte para parar.",
-      "controls.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a câmera ativa.",
-      "controls.telycam.note": "⚠️ Camera IP Default não é compatível com câmeras NEOiD By Telycam.",
+      "controls.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a câmera ativa. Use <strong>Camera Type</strong> para selecionar NEOiD ou Telycam.",
 
       "speed.description": "Alterna a velocidade para o tipo selecionado (Mínima → Lenta → Normal → Rápida → Máxima, em ciclo).",
 

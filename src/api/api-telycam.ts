@@ -233,6 +233,27 @@ export class APITelycam {
     sendViscaUDP(this.IP, `81 01 04 3F 01 ${pp} FF`);
   }
 
+  // Pan/Tilt VISCA puro — sem autenticação, para uso em Camera IP Default sem chave
+  // Formato: 81 01 06 01 VV WW [pan: 01=esq 02=dir 03=stop] [tilt: 01=cima 02=baixo 03=stop] FF
+  async MoveTelycamVISCA(direction: PTZDirection, speed: SpeedType) {
+    const v = Number(panTiltSpeed[speed]);
+    switch (direction) {
+      case "up":        sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 03 01 FF`); break;
+      case "down":      sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 03 02 FF`); break;
+      case "left":      sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 01 03 FF`); break;
+      case "right":     sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 02 03 FF`); break;
+      case "leftup":    sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 01 01 FF`); break;
+      case "leftdown":  sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 01 02 FF`); break;
+      case "rightup":   sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 02 01 FF`); break;
+      case "rightdown": sendViscaUDP(this.IP, `81 01 06 01 ${v} ${v} 02 02 FF`); break;
+      case "home":      sendViscaUDP(this.IP, `81 01 06 04 FF`); break;
+    }
+  }
+
+  async StopTelycamVISCA() {
+    sendViscaUDP(this.IP, `81 01 06 01 09 09 03 03 FF`);
+  }
+
 
   // Tracking
   async SetTrackingActive(active: boolean) {

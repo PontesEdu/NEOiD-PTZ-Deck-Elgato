@@ -4,12 +4,14 @@ import { checkCameraConnection } from "../utils/checkCameraConnection";
 import { PTZ_DIRECTIONS } from "../constants";
 import type { PTZDirection } from "../constants";
 import { APINeoid } from "../api/api-neoid";
+import { APITelycam } from "../api/api-telycam";
 import { resolveCamera } from "../utils/camera-api";
 
 export type PtzSettings = {
   direction: string;
   cameraIPControls: string;
   isDefault: boolean;
+  cameraType?: "neoid" | "telycam";
 };
 
 @action({ UUID: "com.neoid.ptzneoid.ptz-controls" })
@@ -36,7 +38,7 @@ export class PTZControls extends SingletonAction<PtzSettings> {
     const isDefault = settings.isDefault ?? false;
 
     if (isDefault) {
-      if (checkConnectivity) {
+      if (checkConnectivity && settings.cameraType !== "telycam") {
         const ip = settings.cameraIPControls ?? "";
         const connected = await checkCameraConnection(ip, 1000);
         await ev.action.setTitle(connected ? "" : "Not connect");
@@ -90,6 +92,15 @@ export class PTZControls extends SingletonAction<PtzSettings> {
 
     if (isDefault) {
       const cameraIPControls = settings.cameraIPControls ?? "";
+
+      if (settings.cameraType === "telycam") {
+        const api = new APITelycam({ IP: cameraIPControls, key: 0 });
+        api.MoveTelycamVISCA(direction, speed);
+        await streamDeck.settings.setGlobalSettings({ ...globals, cameraIPControls });
+        await ev.action.setTitle("");
+        return;
+      }
+
       const checkCamera = await checkCameraConnection(cameraIPControls, 1000);
 
       if (checkCamera) {
@@ -121,8 +132,13 @@ export class PTZControls extends SingletonAction<PtzSettings> {
 
     if (isDefault) {
       const cameraIPControls = settings.cameraIPControls ?? "";
-      const api = new APINeoid({ IP: cameraIPControls });
-      api.StopMove();
+      if (settings.cameraType === "telycam") {
+        const api = new APITelycam({ IP: cameraIPControls, key: 0 });
+        api.StopTelycamVISCA();
+      } else {
+        const api = new APINeoid({ IP: cameraIPControls });
+        api.StopMove();
+      }
     } else {
       const ctx = resolveCamera(globals);
       if (!ctx) return;
