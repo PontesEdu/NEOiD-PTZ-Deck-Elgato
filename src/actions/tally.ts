@@ -37,17 +37,11 @@ export class Tally extends SingletonAction<TallySettings> {
     const isDefault = settings.isDefault ?? false;
 
     if (isDefault) {
-      const ip = settings.cameraIPControls ?? "";
-      if (!ip) return;
-      const globals = await this.getGlobals();
-      const state = (globals[globalKeys.tallyState(ip)] as string) || "off";
-      await ev.action.setTitle(state.toUpperCase());
+      await ev.action.setTitle("");
     } else {
       const globals = await this.getGlobals();
       if (await noCameraGuard(ev.action, globals)) return;
-      const ip = globals.cameraIP as string;
-      const state = (globals[globalKeys.tallyState(ip)] as string) || "off";
-      await ev.action.setTitle(state.toUpperCase());
+      await ev.action.setTitle(globals.camera ?? "");
     }
   }
 
@@ -155,7 +149,6 @@ export class Tally extends SingletonAction<TallySettings> {
     const next: "red" | "green" | "off" = current === requested ? "off" : requested;
 
     await sendFn(next);
-    await ev.action.setTitle(next.toUpperCase());
 
     await streamDeck.settings.setGlobalSettings({
       ...globals,

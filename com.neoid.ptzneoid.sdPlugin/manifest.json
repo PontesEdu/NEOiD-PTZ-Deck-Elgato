@@ -112,7 +112,7 @@
 		{
 			"UUID": "com.neoid.ptzneoid.tally",
 			"Name": "Tally Light",
-			"UserTitleEnabled": false,
+			"UserTitleEnabled": true,
 			"Tooltip": "Controla o LED de tally da câmera. Press curto = RED, press longo = GREEN.",
 			"Icon": "imgs/plugin/logo-neoid@2x",
 			"States": [
