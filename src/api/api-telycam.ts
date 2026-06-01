@@ -301,13 +301,4 @@ export class APITelycam {
     }
   }
 
-  // Freeze
-  async sendFreeze(enable: boolean) {
-    if (enable) {
-      sendViscaUDP(this.IP, "81 01 04 62 02 FF")
-    } else {
-      sendViscaUDP(this.IP, "81 01 04 62 03 FF")
-    }
-  }
-
 }

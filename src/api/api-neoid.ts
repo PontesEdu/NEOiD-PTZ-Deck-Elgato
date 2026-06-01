@@ -279,17 +279,6 @@ export class APINeoid {
     }
   }
 
-  // Freeze — firmware 1: VISCA via HTTP | firmware 2: VISCA via TCP
-  async sendFreeze(enable: boolean) {
-    if (enable) {
-      await fetch(`${this.baseUrlVisca}=8101046202FF`)
-      sendViscaTCP(this.IP, "81 01 04 62 02 FF")
-    } else {
-      await fetch(`${this.baseUrlVisca}=8101046203FF`)
-      sendViscaTCP(this.IP, "81 01 04 62 03 FF")
-    }
-  }
-
   // Backlight
   async toggleBacklight(enable: boolean) {
     const urlClassic = `http://${this.IP}/cgi-bin/ptzctrl.cgi?post_image_value&backlight&${enable ? 2 : 3}`;
