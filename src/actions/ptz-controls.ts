@@ -41,7 +41,7 @@ export class PTZControls extends SingletonAction<PtzSettings> {
       if (checkConnectivity && settings.cameraType !== "telycam") {
         const ip = settings.cameraIPControls ?? "";
         const connected = await checkCameraConnection(ip, 1000);
-        await ev.action.setTitle(connected ? "" : "Not connect");
+        await ev.action.setTitle(connected ? "" : "No camera");
       } else {
         await ev.action.setTitle("");
       }
@@ -114,7 +114,7 @@ export class PTZControls extends SingletonAction<PtzSettings> {
         await ev.action.setTitle("");
         return;
       } else {
-        ev.action.setTitle("Not connect");
+        ev.action.setTitle("No camera");
         return;
       }
     } else {

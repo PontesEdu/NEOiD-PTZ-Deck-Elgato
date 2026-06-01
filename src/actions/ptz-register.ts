@@ -47,18 +47,18 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
       let telycamPassword = settings.telycamPassword === undefined ? false : settings.telycamPassword as string
 
       if(!telycamUser || !telycamPassword){
-        titleName = `Not\nConnect\nTelycam`
+        titleName = `No camera`
         await ev.action.setTitle(`${titleName}`)
         return;
       }
-      
+
       const key = await LoginTelycam({ip: String(cameraIP), user: telycamUser, password: telycamPassword})
 
       if(!key){
-        await ev.action.setTitle(`Not\nConnect\nTelycam`)
+        await ev.action.setTitle(`No camera`)
         return;
       }
-      
+
       titleName = settings.camera === undefined ? "" : settings.camera as string
       await ev.action.setTitle(`${titleName}`)
 
@@ -66,8 +66,8 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
       const checkCamera = await checkCameraConnection(`${cameraIP}`, this.timeCheck)
 
       if(!checkCamera) {
-        ev.action.setTitle('Not\nConnect')
-        
+        ev.action.setTitle('No camera')
+
       } else {
         titleName = settings.camera === undefined ? "" : settings.camera as string
         await ev.action.setTitle(`${titleName}`)
@@ -101,18 +101,18 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
 
       
       if(!telycamUser || !telycamPassword){
-        titleName = `Not\nConnect\nTelycam`
+        titleName = `No camera`
         await ev.action.setTitle(`${titleName}`)
         return;
       }
-      
+
       const key = await LoginTelycam({ip: String(cameraIP), user: telycamUser, password: telycamPassword})
 
       if(!key){
-        await ev.action.setTitle(`Not\nConnect\nTelycam`)
+        await ev.action.setTitle(`No camera`)
         return;
       }
-      
+
       titleName = settings.camera === undefined ? "" : settings.camera as string
       await ev.action.setTitle(`${titleName}`)
 
@@ -121,8 +121,8 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
       const checkCamera = await checkCameraConnection(`${cameraIP}`, this.timeCheck)
 
       if(!checkCamera) {
-        ev.action.setTitle('Not\nConnect')
-        
+        ev.action.setTitle('No camera')
+
       } else {
         titleName = settings.camera === undefined ? "" : settings.camera as string
         await ev.action.setTitle(`${titleName}`)
@@ -181,11 +181,11 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
     const telycamPassword = settings.telycamPassword as string | undefined;
 
     if (!telycamUser || !telycamPassword) {
-      await ev.action.setTitle(`Not\nConnect\nTelycam`);
+      await ev.action.setTitle(`No camera`);
       await streamDeck.settings.setGlobalSettings({
         ...globals,
         cameraIP: false,
-        camera: "Not\nConnect\nTelycam",
+        camera: "No camera",
         isTelycam: false,
       });
       return false;
@@ -194,11 +194,11 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
     const key = await LoginTelycam({ ip: cameraIP, user: telycamUser, password: telycamPassword });
 
     if (!key) {
-      await ev.action.setTitle(`Not\nConnect\nTelycam`);
+      await ev.action.setTitle(`No camera`);
       await streamDeck.settings.setGlobalSettings({
         ...globals,
         cameraIP: false,
-        camera: "Not\nConnect\nTelycam",
+        camera: "No camera",
         isTelycam: false,
       });
       return true;
@@ -226,7 +226,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
     const checkCamera = await checkCameraConnection(cameraIP, this.timeCheck);
 
     if (!checkCamera) {
-      ev.action.setTitle('Not\nConnect');
+      ev.action.setTitle('No camera');
       await streamDeck.settings.setGlobalSettings({
         ...globals,
         cameraIP: false,
