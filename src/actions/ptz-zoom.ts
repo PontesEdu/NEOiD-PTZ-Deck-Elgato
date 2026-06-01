@@ -30,7 +30,7 @@ export class PTZZoom extends SingletonAction<PtzZoom> {
       return;
     }
 
-    ev.action.setTitle(direction === "zoomin" ? "Zoom in" : "Zoom out");
+    ev.action.setTitle("");
     ev.action.setImage(`imgs/actions/zoom/${direction}.png`);
   }
 
