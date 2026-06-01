@@ -31,13 +31,13 @@ export class PTZFocus extends SingletonAction<PtzFocus> {
     }
 
     if (mode === "focusin") {
-      ev.action.setTitle("Focus in");
+      ev.action.setTitle("");
       ev.action.setImage("imgs/actions/focus/focusin.png");
     } else if (mode === "focusout") {
-      ev.action.setTitle("Focus out");
+      ev.action.setTitle("");
       ev.action.setImage("imgs/actions/focus/focusout.png");
     } else {
-      ev.action.setTitle("auto");
+      ev.action.setTitle("");
       ev.action.setImage("imgs/actions/focus/auto.png");
     }
   }

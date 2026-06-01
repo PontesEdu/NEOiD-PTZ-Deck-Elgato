@@ -23,9 +23,9 @@ export class FocusDial extends SingletonAction {
     const direction = ev.payload.ticks > 0 ? "focusin" : "focusout";
 
     if(direction === "focusin") {
-      ev.action.setTitle(`Focus in`)
+      ev.action.setTitle(`Near`)
     } else if(direction === "focusout") {
-      ev.action.setTitle(`Focus out`)
+      ev.action.setTitle(`Far`)
     }
 
     const speed = globals.focusMode ?? "normal";
