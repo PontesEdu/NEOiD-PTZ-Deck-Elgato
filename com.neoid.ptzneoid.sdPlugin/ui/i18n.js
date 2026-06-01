@@ -31,9 +31,7 @@
       "zoomDial.description": "Rotate the dial to adjust zoom.",
 
       "tally.description": "<strong>Short press:</strong> RED (on air)<br><strong>Long press (900 ms):</strong> GREEN (preview)<br>Pressing again in the same state turns tally OFF.",
-      "tally.ipDefault.description": "This button will be locked to this specific camera, regardless of the camera selected by <em>Select Camera PTZ</em>.",
-
-      "freeze.description": "Freezes the camera video output. Press to toggle between LIVE and FREEZE."
+      "tally.ipDefault.description": "This button will be locked to this specific camera, regardless of the camera selected by <em>Select Camera PTZ</em>."
     },
 
     pt_BR: {
@@ -65,9 +63,7 @@
       "zoomDial.description": "Gire o dial para ajustar o zoom.",
 
       "tally.description": "<strong>Press curto:</strong> RED (ao vivo)<br><strong>Press longo (900 ms):</strong> GREEN (preview)<br>Pressionar novamente no mesmo estado desliga o tally (OFF).",
-      "tally.ipDefault.description": "Este botão ficará fixo nesta câmera, independente da câmera selecionada pelo <em>Select Camera PTZ</em>.",
-
-      "freeze.description": "Congela a saída de vídeo da câmera. Pressione para alternar entre LIVE e FREEZE."
+      "tally.ipDefault.description": "Este botão ficará fixo nesta câmera, independente da câmera selecionada pelo <em>Select Camera PTZ</em>."
     }
   };
 
