@@ -3,7 +3,7 @@
 
   const LOCALES = {
     en: {
-      "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>Not connected</strong> is shown. Always select the target camera here before using other actions.",
+      "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>No camera</strong> is shown. Always select the target camera here before using other actions.",
       "select.telycam.description": "When <strong>NEOiD By Telycam</strong> is enabled, enter User and Password credentials. Connectivity is verified automatically.",
       "select.telycam.note": "⚠️ All Telycam actions require this option to be enabled here.",
 
@@ -31,11 +31,11 @@
       "zoomDial.description": "Rotate the dial to adjust zoom.",
 
       "tally.description": "<strong>Short press:</strong> RED (on air)<br><strong>Long press (900 ms):</strong> GREEN (preview)<br>Pressing again in the same state turns tally OFF.",
-      "tally.ipDefault.description": "This button will be locked to this specific camera, regardless of the camera selected by <em>Select Camera PTZ</em>."
+      "tally.ipDefault.description": "This button will be locked to this specific camera, regardless of the camera selected by <em>Select Camera</em>."
     },
 
     pt_BR: {
-      "select.description": "Cadastre uma câmera PTZ informando o endereço IP. Atribua um nome opcional. Se offline, <strong>Not connected</strong> é exibido automaticamente. Selecione sempre a câmera desejada aqui antes de usar outras ações.",
+      "select.description": "Cadastre uma câmera PTZ informando o endereço IP. Atribua um nome opcional. Se offline, <strong>No camera</strong> é exibido automaticamente. Selecione sempre a câmera desejada aqui antes de usar outras ações.",
       "select.telycam.description": "Com <strong>NEOiD By Telycam</strong> ativado, informe Usuário e Senha. A conectividade é verificada automaticamente.",
       "select.telycam.note": "⚠️ Todas as ações Telycam exigem que esta opção esteja ativada aqui.",
 
@@ -63,7 +63,7 @@
       "zoomDial.description": "Gire o dial para ajustar o zoom.",
 
       "tally.description": "<strong>Press curto:</strong> RED (ao vivo)<br><strong>Press longo (900 ms):</strong> GREEN (preview)<br>Pressionar novamente no mesmo estado desliga o tally (OFF).",
-      "tally.ipDefault.description": "Este botão ficará fixo nesta câmera, independente da câmera selecionada pelo <em>Select Camera PTZ</em>."
+      "tally.ipDefault.description": "Este botão ficará fixo nesta câmera, independente da câmera selecionada pelo <em>Select Camera</em>."
     }
   };
 

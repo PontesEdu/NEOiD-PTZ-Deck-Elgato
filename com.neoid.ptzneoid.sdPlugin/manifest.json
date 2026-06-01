@@ -5,7 +5,7 @@
 	"Actions": [
 		{
 			"UUID": "com.neoid.ptzneoid.ptz-register",
-			"Name": "Select Camera PTZ",
+			"Name": "Select Camera",
 			"UserTitleEnabled": false,
 			"Tooltip": "Cadastro de câmeras PTZ",
 			"Icon": "imgs/plugin/logo-neoid@2x",
@@ -19,7 +19,7 @@
 		},
 		{
 			"UUID": "com.neoid.ptzneoid.ptz-controls",
-			"Name": "Controls PTZ",
+			"Name": "Controls",
 			"UserTitleEnabled": true,
 			"Tooltip": "Controls the functions",
 			"Icon": "imgs/plugin/logo-neoid@2x",

@@ -45,7 +45,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         const connected = await checkCameraConnection(cameraIP, 1000);
         if (!connected) {
           await ev.action.setImage("");
-          await ev.action.setTitle("Not connect");
+          await ev.action.setTitle("No camera");
           return;
         }
       }
@@ -120,7 +120,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const connected = await checkCameraConnection(cameraIP, 1000);
     if (!connected) {
       await ev.action.setImage("");
-      await ev.action.setTitle("Not connect");
+      await ev.action.setTitle("No camera");
     }
   }
 
@@ -149,7 +149,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
     const connected = await checkCameraConnection(cameraIP, 1000);
     if (!connected) {
       await ev.action.setImage("");
-      await ev.action.setTitle("Not connect");
+      await ev.action.setTitle("No camera");
       return;
     }
     const globals = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
@@ -195,7 +195,7 @@ export class PTZPreset extends SingletonAction<PtzPresetProps> {
         }
         this.longPress = true;
         await ev.action.setImage("");
-        await ev.action.setTitle("Not connect");
+        await ev.action.setTitle("No camera");
       }
     }
   }
