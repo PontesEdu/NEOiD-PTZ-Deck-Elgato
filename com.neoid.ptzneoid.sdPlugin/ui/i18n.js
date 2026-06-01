@@ -17,7 +17,7 @@
       "focus.description": "Hold to adjust focus continuously; release to stop. <strong>Auto Focus</strong> triggers a one-shot autofocus.",
 
       "tracking.description": "Short press: cycle modes. Long press (≈1 s): activate selected mode. Short press while active: deactivate.<br><br>NEOiD modes: Presenter, Zone, Auto Frame.<br>Telycam modes: Tracking, Head Framing, Body Framing.",
-      "tracking.telycam.note": "⚠️ Telycam tracking modes are currently in BETA.",
+      "tracking.webui.note": "⚠️ Zone, Auto Frame, Head Framing and Body Framing modes require prior setup in the camera's web interface to work correctly.",
 
       "backlight.description": "Toggles backlight compensation on/off. Use when a bright background causes the subject to appear dark.",
 
@@ -49,7 +49,7 @@
       "focus.description": "Segure para ajustar o foco continuamente; solte para parar. <strong>Auto Focus</strong> aciona o foco automático instantaneamente.",
 
       "tracking.description": "Toque rápido: alterna modos. Pressão longa (≈1 s): ativa o modo selecionado. Toque rápido com ativo: desativa.<br><br>Modos NEOiD: Presenter, Zone, Auto Frame.<br>Modos Telycam: Tracking, Head Framing, Body Framing.",
-      "tracking.telycam.note": "⚠️ Os modos de rastreamento Telycam estão em BETA.",
+      "tracking.webui.note": "⚠️ Os modos Zone, Auto Frame, Head Framing e Body Framing precisam ser configurados previamente na interface web da câmera para funcionar corretamente.",
 
       "backlight.description": "Ativa ou desativa a compensação de retroiluminação. Use quando o fundo claro escurece o objeto em cena.",
 

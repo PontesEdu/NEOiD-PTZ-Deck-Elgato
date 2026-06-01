@@ -1,5 +1,5 @@
 {
-  "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>Not connected</strong> is shown. Always select the target camera here before using other actions.",
+  "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>No camera</strong> is shown. Always select the target camera here before using other actions.",
   "select.telycam.description": "When <strong>NEOiD By Telycam</strong> is enabled, enter User and Password credentials. Connectivity is verified automatically.",
   "select.telycam.note": "⚠️ All Telycam actions require this option to be enabled here.",
 
@@ -14,7 +14,7 @@
   "focus.description": "Hold to adjust focus continuously; release to stop. <strong>Auto Focus</strong> triggers a one-shot autofocus.",
 
   "tracking.description": "Short press: cycle modes. Long press (≈1 s): activate selected mode. Short press while active: deactivate.<br><br>NEOiD modes: Presenter, Zone, Auto Frame.<br>Telycam modes: Tracking, Head Framing, Body Framing.",
-  "tracking.telycam.note": "⚠️ Telycam tracking modes are currently in BETA.",
+  "tracking.webui.note": "⚠️ Zone, Auto Frame, Head Framing and Body Framing modes require prior setup in the camera's web interface to work correctly.",
 
   "backlight.description": "Toggles backlight compensation on/off. Use when a bright background causes the subject to appear dark.",
 
