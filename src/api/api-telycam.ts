@@ -290,15 +290,5 @@ export class APITelycam {
     }
   }
 
-  // Tally — 8x 01 7E 01 0A 00 0p FF (p=1/2=Red, p=3=Green, p=0/4=Off)
-  async sendTally(state: "red" | "green" | "off") {
-    if (state === "red") {
-      sendViscaUDP(this.IP, "81 01 7E 01 0A 00 01 FF")
-    } else if (state === "green") {
-      sendViscaUDP(this.IP, "81 01 7E 01 0A 00 03 FF")
-    } else {
-      sendViscaUDP(this.IP, "81 01 7E 01 0A 00 00 FF")
-    }
-  }
 
 }
