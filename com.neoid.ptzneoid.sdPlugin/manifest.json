@@ -144,7 +144,8 @@
         "layout": "$A1",
 				"Icon": "imgs/plugin/logo-neoid",
 				"TriggerDescription": {
-					"Rotate": "Adjust focus"
+					"Rotate": "Near / Far",
+					"Push": "Auto focus"
 				}
       },
 			"Tooltip": "Controls the functions Focus",
@@ -166,7 +167,7 @@
 				"layout": "$A1",
 				"Icon": "imgs/plugin/logo-neoid",
 				"TriggerDescription": {
-					"Rotate": "Adjust Zoom"
+					"Rotate": "Zoom in / Zoom out"
 				}
       },
 			"Tooltip": "Controls the functions Zoom",
