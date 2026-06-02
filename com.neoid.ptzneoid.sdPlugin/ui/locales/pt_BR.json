@@ -2,6 +2,8 @@
   "select.description": "Cadastre uma câmera PTZ informando o endereço IP. Atribua um nome opcional. Se offline, <strong>No camera</strong> é exibido automaticamente. Selecione sempre a câmera desejada aqui antes de usar outras ações.",
   "select.telycam.description": "Com <strong>NEOiD By Telycam</strong> ativado, informe Usuário e Senha. A conectividade é verificada automaticamente.",
   "select.telycam.note": "⚠️ Todas as ações Telycam exigem que esta opção esteja ativada aqui.",
+  "select.pgm.description": "Ao selecionar, o botão exibe brevemente <strong>PGM</strong> ou <strong>PVW</strong> conforme o estado atual de tally da câmera, depois retorna ao visual normal.",
+  "select.pgm.note": "⚠️ O indicador PGM/PVW funciona apenas com câmeras NEOiD.",
 
   "controls.description": "Escolha uma direção e pressione para mover a câmera. Segure para mover continuamente; solte para parar.",
   "controls.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a câmera ativa.",
