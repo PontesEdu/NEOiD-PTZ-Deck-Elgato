@@ -3,9 +3,9 @@
 
   const LOCALES = {
     en: {
-      "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>No camera</strong> is shown. Always select the target camera here before using other actions.",
-      "select.telycam.description": "When <strong>NEOiD By Telycam</strong> is enabled, enter User and Password credentials. Connectivity is verified automatically.",
-      "select.telycam.note": "⚠️ All Telycam actions require this option to be enabled here.",
+      "select.description": "Register a camera by IP and optional name. If offline, <strong>No camera</strong> is shown. Always select the target camera before using other actions.",
+      "select.pgm.note": "After selecting, briefly shows <strong>PGM</strong> or <strong>PVW</strong> if tally is active (NEOiD only).",
+      "select.telycam.note": "⚠️ With <strong>NEOiD By Telycam</strong> enabled, enter credentials — required for all Telycam actions.",
 
       "controls.description": "Choose a direction and press to move the camera. Hold to move continuously; release to stop.",
       "controls.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, overriding the active camera selection. Use <strong>Camera Type</strong> to select NEOiD or Telycam.",
@@ -30,14 +30,12 @@
       "focusDial.description": "Rotate the dial to adjust focus.",
       "zoomDial.description": "Rotate the dial to adjust zoom.",
 
-      "tally.description": "<strong>Short press:</strong> RED (on air)<br><strong>Long press (900 ms):</strong> GREEN (preview)<br>Pressing again in the same state turns tally OFF.",
-      "tally.ipDefault.description": "This button will be locked to this specific camera, regardless of the camera selected by <em>Select Camera</em>."
     },
 
     pt_BR: {
-      "select.description": "Cadastre uma câmera PTZ informando o endereço IP. Atribua um nome opcional. Se offline, <strong>No camera</strong> é exibido automaticamente. Selecione sempre a câmera desejada aqui antes de usar outras ações.",
-      "select.telycam.description": "Com <strong>NEOiD By Telycam</strong> ativado, informe Usuário e Senha. A conectividade é verificada automaticamente.",
-      "select.telycam.note": "⚠️ Todas as ações Telycam exigem que esta opção esteja ativada aqui.",
+      "select.description": "Cadastre uma câmera por IP e nome opcional. Se offline, <strong>No camera</strong> é exibido. Selecione sempre a câmera desejada antes de usar outras ações.",
+      "select.pgm.note": "Ao selecionar, exibe brevemente <strong>PGM</strong> ou <strong>PVW</strong> se o tally estiver ativo (apenas NEOiD).",
+      "select.telycam.note": "⚠️ Com <strong>NEOiD By Telycam</strong> ativado, informe credenciais — obrigatório para todas as ações Telycam.",
 
       "controls.description": "Escolha uma direção e pressione para mover a câmera. Segure para mover continuamente; solte para parar.",
       "controls.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a câmera ativa. Use <strong>Camera Type</strong> para selecionar NEOiD ou Telycam.",
@@ -62,8 +60,6 @@
       "focusDial.description": "Gire o dial para ajustar o foco.",
       "zoomDial.description": "Gire o dial para ajustar o zoom.",
 
-      "tally.description": "<strong>Press curto:</strong> RED (ao vivo)<br><strong>Press longo (900 ms):</strong> GREEN (preview)<br>Pressionar novamente no mesmo estado desliga o tally (OFF).",
-      "tally.ipDefault.description": "Este botão ficará fixo nesta câmera, independente da câmera selecionada pelo <em>Select Camera</em>."
     }
   };
 
