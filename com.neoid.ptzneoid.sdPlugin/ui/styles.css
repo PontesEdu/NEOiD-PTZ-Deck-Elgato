@@ -3,9 +3,10 @@
   margin: 0px;
 }
 
-body { 
+body {
   font-family: sans-serif;
   color: rgba(225, 224, 232, 0.93);
+  padding-top: 16px;
 }
 
 sdpi-select{
