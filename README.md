@@ -1,66 +1,50 @@
 # NEOiD PTZ Deck
 
-Plugin para **Elgato Stream Deck** que controla câmeras PTZ profissionais via rede local — sem necessidade de joystick físico ou software dedicado.
+A Stream Deck plugin for controlling PTZ cameras over a local network — no joystick or dedicated software required.
 
 ---
 
-## Câmeras suportadas
+## Supported Cameras
 
-- **NEOiD** — CGI/HTTP com fallback VISCA
-- **Telycam** — JSON API com fallback VISCA
+| Brand | Protocol | Notes |
+|---|---|---|
+| **NEOiD** | CGI/HTTP + VISCA fallback | No credentials required |
+| **Telycam** | JSON API + VISCA fallback | Requires username and password |
 
 ---
 
 ## Actions
 
-| Action | Descrição |
+| Action | Description |
 |---|---|
-| **Selecionar Câmera** | Registra a câmera pelo IP. Todos os outros botões passam a usá-la automaticamente |
-| **Controle Direcional** | Pan/Tilt em 8 direções + home. Pressione e segure → move; solte → para |
-| **Zoom** | Zoom in/out contínuo com controle de velocidade |
-| **Foco** | Foco manual (in/out) e automático |
-| **Velocidade** | Alterna entre 5 níveis de velocidade para pan/tilt, zoom e foco |
-| **Preset** | Clique curto = recall; pressão longa (1,1 s) = salva a posição atual |
-| **Tracking** | Clique curto = alterna modo; pressão longa (0,9 s) = ativa/desativa |
-| **Backlight** | Ativa/desativa o backlight da câmera |
-| **OSD** | Abre, navega e fecha o menu on-screen da câmera |
-| **Zoom Dial** | Zoom via encoder rotatório (Stream Deck+) |
-| **Focus Dial** | Foco via encoder; clique no encoder = foco automático (Stream Deck+) |
+| **Select Camera** | Registers a camera by its IP address and makes it available to all other actions. NEOiD cameras briefly display a tally indicator — red for PGM, green for PVW — after a successful connection. |
+| **Controls** | Pan/Tilt in 8 directions plus Home. Hold to move, release to stop. Supports Camera IP Default mode to control a fixed camera independently of the active selection. |
+| **Zoom** | Continuous zoom in/out. Hold to zoom, release to stop. Speed is set by the Speed action. |
+| **Focus** | Manual focus in, manual focus out, or auto focus. Hold for continuous manual adjustment, release to stop. |
+| **Speed** | Cycles through 5 speed levels (slowest → slow → normal → fast → fastest) for a selected channel: Pan/Tilt, Zoom, or Focus. |
+| **Preset** | Short press recalls the preset. Long press (1.1 s) saves the current camera position. NEOiD: optionally displays a snapshot of the saved position on the button. |
+| **Tracking** | Short press cycles through tracking modes. Long press (0.9 s) toggles tracking on/off. Mode names are shown on the button; the button image reflects the active/inactive state. |
+| **Backlight** | Toggles the camera backlight on or off. |
+| **OSD Menu** | Opens, navigates, and closes the camera's on-screen display menu. |
+| **Focus Dial** | Encoder-only (Stream Deck+). Rotate for manual focus near/far; press the encoder for auto focus. Auto-stops 200 ms after the last rotation. |
+| **Zoom Dial** | Encoder-only (Stream Deck+). Rotate to zoom in or out. Auto-stops 200 ms after the last rotation. |
+
+### Tracking modes
+
+| Camera | Mode 1 | Mode 2 | Mode 3 |
+|---|---|---|---|
+| NEOiD | Presenter | Zone | Auto Frame |
+| Telycam | Tracking | Head Framing | Body Framing |
 
 ---
 
-## Como usar
+## Getting Started
 
-### 1. Registrar a câmera
+### Prerequisites
 
-Arraste a action **Selecionar Câmera** para um botão. No painel de propriedades:
-
-- Digite o **IP da câmera** na rede local (ex: `192.168.1.100`)
-- Selecione o tipo: **NEOiD** ou **Telycam**
-- Se Telycam, preencha usuário e senha
-- Pressione o botão — o plugin testa a conexão e registra a câmera
-
-A partir daí, todos os outros botões reconhecem a câmera automaticamente.
-
-### 2. Adicionar controles
-
-Arraste as outras actions para os botões e configure cada uma no painel de propriedades à direita. Cada action exibe apenas as opções relevantes para ela.
-
-### 3. Encoders (Stream Deck+)
-
-- **Girar** → executa o comando continuamente enquanto está em rotação
-- **Parar de girar** → interrompe automaticamente após 200 ms
-- **Pressionar o encoder de Foco** → ativa o foco automático
-
----
-
-## Desenvolvimento
-
-### Pré-requisitos
-
-- [Node.js](https://nodejs.org/) v20+
-- [Stream Deck app](https://www.elgato.com/downloads) instalado
-- Stream Deck CLI instalada globalmente:
+- [Node.js](https://nodejs.org/) v20 or later
+- [Elgato Stream Deck app](https://www.elgato.com/downloads) v6.5 or later
+- Stream Deck CLI:
 
 ```bash
 npm install -g @elgato/cli
@@ -69,33 +53,79 @@ npm install -g @elgato/cli
 ### Setup
 
 ```bash
-git clone <url-do-repositorio>
+git clone <repository-url>
 cd ptzneoid
 npm install
 ```
 
-### Desenvolvimento local
+---
+
+## How to Use
+
+### 1. Register a camera
+
+Drag the **Select Camera** action onto a button. In the Property Inspector:
+
+- Enter the camera's **IP address** (e.g. `192.168.1.100`)
+- Select the camera type: **NEOiD** or **Telycam**
+- For Telycam, enter the username and password
+- Press the button — the plugin tests the connection and registers the camera
+
+All other actions will automatically use this camera from that point on.
+
+### 2. Add controls
+
+Drag any action onto a button and configure it in the Property Inspector. Each action shows only the options relevant to it.
+
+### 3. Encoders (Stream Deck+)
+
+- **Rotate** → sends the command continuously while rotating
+- **Stop rotating** → the camera stops automatically after 200 ms
+- **Push the Focus encoder** → triggers auto focus
+
+### 4. Multi-camera setup with Camera IP Default
+
+The **Controls** and **Preset** actions support a **Camera IP Default** mode that lets a button control a fixed camera IP independently of the currently active selection.
+
+This is useful for multi-camera profiles where different buttons need to control different cameras at the same time — the active camera set via Select Camera does not affect these buttons.
+
+> **Note:** Camera IP Default mode always uses NEOiD protocol by default. Telycam cameras in this mode use VISCA for movement and preset commands.
+
+---
+
+## Development
+
+### Local development
 
 ```bash
-# Vincula a pasta do plugin ao Stream Deck (uma vez)
+# Link the plugin folder to the Stream Deck app (run once)
 streamdeck link com.neoid.ptzneoid.sdPlugin
 
-# Compila e reinicia o plugin a cada alteração em src/
+# Watch mode: recompiles and restarts the plugin on every change in src/
 npm run watch
 ```
 
-### Build de produção
+### Production build
 
 ```bash
 npm run build
 ```
 
-Gera `com.neoid.ptzneoid.sdPlugin/bin/plugin.js`.
+Outputs `com.neoid.ptzneoid.sdPlugin/bin/plugin.js`.
 
-### Empacotar para distribuição
+### Package for distribution
 
 ```bash
 streamdeck pack com.neoid.ptzneoid.sdPlugin
 ```
 
-Gera `com.neoid.ptzneoid.streamDeckPlugin` — instala com dois cliques no Stream Deck app.
+Produces `com.neoid.ptzneoid.streamDeckPlugin` — double-click to install in the Stream Deck app.
+
+---
+
+## Requirements
+
+- Stream Deck app v6.5+
+- macOS 12+ or Windows 10+
+- Node.js 20 (bundled with the plugin at runtime)
+- PTZ camera accessible on the local network
