@@ -4,8 +4,8 @@ import { checkCameraConnection } from "../utils/checkCameraConnection";
 import type { GlobalSettings } from "../types";
 import { LoginTelycam } from "../utils/login-telycam";
 import { ActionRegistry } from "../utils/action-registry";
-
-const TALLY_DISPLAY_DURATION = 4000;
+const TALLY_DISPLAY_DURATION = 2000;
+const PGM_BLINK_INTERVAL_MS = 400;
 
 type PtzRegisterSettings = {
   cameraIP?: string | boolean;
@@ -18,6 +18,7 @@ type PtzRegisterSettings = {
 
 type TallyEntry = {
   timer: ReturnType<typeof setTimeout> | null;
+  blinkInterval: ReturnType<typeof setInterval> | null;
   action: KeyDownEvent<PtzRegisterSettings>['action'];
   restoreImage: string;
 };
@@ -269,6 +270,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
   private clearAllTallyDisplays(): void {
     for (const [, entry] of this.tallyInfoMap) {
       if (entry.timer) clearTimeout(entry.timer);
+      if (entry.blinkInterval) clearInterval(entry.blinkInterval);
       entry.action.setImage(entry.restoreImage);
     }
     this.tallyInfoMap.clear();
@@ -283,7 +285,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
     cameraIP: string
   ): void {
     const restoreImage = "";
-    const entry: TallyEntry = { timer: null, action: act, restoreImage };
+    const entry: TallyEntry = { timer: null, blinkInterval: null, action: act, restoreImage };
     this.tallyInfoMap.set(actionId, entry);
 
     (async () => {
@@ -297,13 +299,19 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
         return;
       }
 
-      const tallyImage = status === "PGM"
+      const tallyImg = status === "PGM"
         ? "imgs/actions/camera-select/Camera-Select-vermelho"
         : "imgs/actions/camera-select/Camera-Select-verde";
 
-      await act.setImage(tallyImage);
+      let blinkOn = true;
+      await act.setImage(tallyImg);
+      entry.blinkInterval = setInterval(() => {
+        blinkOn = !blinkOn;
+        act.setImage(blinkOn ? tallyImg : "");
+      }, PGM_BLINK_INTERVAL_MS);
 
       entry.timer = setTimeout(async () => {
+        if (entry.blinkInterval) clearInterval(entry.blinkInterval);
         this.tallyInfoMap.delete(actionId);
         await act.setImage(restoreImage);
       }, TALLY_DISPLAY_DURATION);

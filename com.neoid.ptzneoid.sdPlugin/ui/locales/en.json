@@ -6,8 +6,8 @@
   "select.pgm.note": "⚠️ PGM/PVW indicator is only available for NEOiD cameras.",
 
   "controls.description": "Choose a direction and press to move the camera. Hold to move continuously; release to stop.",
-  "controls.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, overriding the active camera selection.",
-  "controls.telycam.note": "⚠️ Camera IP Default is not compatible with NEOiD By Telycam cameras.",
+  "controls.ipDefault.description": "Enable <strong>Camera IP</strong> to target a specific IP, overriding the active camera selection.",
+  "controls.telycam.note": "⚠️ Camera IP is not compatible with NEOiD By Telycam cameras.",
 
   "speed.description": "Cycles speed for the selected type (Slowest → Slow → Normal → Fast → Fastest, then repeats).",
 
@@ -21,8 +21,8 @@
   "backlight.description": "Toggles backlight compensation on/off. Use when a bright background causes the subject to appear dark.",
 
   "preset.description": "Short press: recall preset. Long press (≈1 s): save current position as preset. Enable <strong>Image</strong> to attach a snapshot thumbnail to the button.",
-  "preset.ipDefault.description": "Enable <strong>Camera IP Default</strong> to target a specific IP, bypassing the Select Camera action.",
-  "preset.telycam.note": "⚠️ Telycam cameras do not support snapshots. Camera IP Default is not compatible with NEOiD By Telycam.",
+  "preset.ipDefault.description": "Enable <strong>Camera IP</strong> to target a specific IP, bypassing the Select Camera action.",
+  "preset.telycam.note": "⚠️ Telycam cameras do not support snapshots. Camera IP is not compatible with NEOiD By Telycam.",
 
   "osd.description": "Controls the camera on-screen menu. Use <strong>PTZ Controls</strong> to navigate after OSD is open. <strong>OSD Enter</strong> confirms, <strong>OSD Back</strong> returns.",
 

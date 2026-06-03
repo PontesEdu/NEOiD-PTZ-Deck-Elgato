@@ -6,8 +6,8 @@
   "select.pgm.note": "⚠️ O indicador PGM/PVW funciona apenas com câmeras NEOiD.",
 
   "controls.description": "Escolha uma direção e pressione para mover a câmera. Segure para mover continuamente; solte para parar.",
-  "controls.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a câmera ativa.",
-  "controls.telycam.note": "⚠️ Camera IP Default não é compatível com câmeras NEOiD By Telycam.",
+  "controls.ipDefault.description": "Ative <strong>Camera IP</strong> para controlar um IP específico, ignorando a câmera ativa.",
+  "controls.telycam.note": "⚠️ Camera IP não é compatível com câmeras NEOiD By Telycam.",
 
   "speed.description": "Alterna a velocidade para o tipo selecionado (Mínima → Lenta → Normal → Rápida → Máxima, em ciclo).",
 
@@ -21,8 +21,8 @@
   "backlight.description": "Ativa ou desativa a compensação de retroiluminação. Use quando o fundo claro escurece o objeto em cena.",
 
   "preset.description": "Toque rápido: chama o preset. Pressão longa (≈1 s): salva a posição atual. Ative <strong>Image</strong> para exibir uma miniatura no botão.",
-  "preset.ipDefault.description": "Ative <strong>Camera IP Default</strong> para controlar um IP específico, ignorando a ação Select Camera.",
-  "preset.telycam.note": "⚠️ Câmeras Telycam não suportam imagens neste recurso. Camera IP Default não é compatível com NEOiD By Telycam.",
+  "preset.ipDefault.description": "Ative <strong>Camera IP</strong> para controlar um IP específico, ignorando a ação Select Camera.",
+  "preset.telycam.note": "⚠️ Câmeras Telycam não suportam imagens neste recurso. Camera IP não é compatível com NEOiD By Telycam.",
 
   "osd.description": "Controla o menu da câmera na tela. Use <strong>PTZ Controls</strong> para navegar após abrir o OSD. <strong>OSD Enter</strong> confirma, <strong>OSD Back</strong> retorna.",
 
