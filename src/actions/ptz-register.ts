@@ -14,6 +14,7 @@ type PtzRegisterSettings = {
   telycamUser?: string;
   telycamPassword?: string;
   isDefault?: boolean;
+  showTally?: boolean;
 };
 
 type TallyEntry = {
@@ -175,7 +176,7 @@ export class PTZRegister extends SingletonAction<PtzRegisterSettings> {
       if (!shouldBroadcast) return;
     } else {
       const connected = await this.activateNEOiD(cameraIP, settings, globals, ev);
-      if (connected) {
+      if (connected && settings.showTally) {
         this.scheduleTallyFeedback(ev.action, ev.action.id, cameraIP);
       }
     }

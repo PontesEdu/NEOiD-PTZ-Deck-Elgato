@@ -2,8 +2,8 @@
   "select.description": "Register a PTZ camera by entering its IP address. Assign an optional name. If the camera is offline, <strong>No camera</strong> is shown. Always select the target camera here before using other actions.",
   "select.telycam.description": "When <strong>NEOiD By Telycam</strong> is enabled, enter User and Password credentials. Connectivity is verified automatically.",
   "select.telycam.note": "⚠️ All Telycam actions require this option to be enabled here.",
-  "select.pgm.description": "After selecting, the button briefly shows <strong>PGM</strong> or <strong>PVW</strong> based on the camera's current tally status, then returns to normal.",
-  "select.pgm.note": "⚠️ PGM/PVW indicator is only available for NEOiD cameras.",
+  "select.pgm.description": "Enable <strong>Tally Feedback</strong> to briefly show a blinking indicator after selecting a camera: red for PGM, green for PVW. The button returns to normal after 3 seconds.",
+  "select.pgm.note": "⚠️ Tally Feedback is only available for NEOiD cameras and is hidden when NEOiD By Telycam is enabled.",
 
   "controls.description": "Choose a direction and press to move the camera. Hold to move continuously; release to stop.",
   "controls.ipDefault.description": "Enable <strong>Camera IP</strong> to target a specific IP, overriding the active camera selection.",
